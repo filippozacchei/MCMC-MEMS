@@ -88,49 +88,49 @@ X_train_scaled = scaler.fit_transform(X_train_rep)
 X_test_scaled = scaler.transform(X_test_rep)
 print(y_test.shape)
 
-# # Step 3: Build the Neural Network Surrogate Model
-# model = Sequential()
-# model.add(Dense(n_nr, activation='tanh', input_shape=(X_train_scaled.shape[1],))) 
-# model.add(Dense(n_nr, activation='tanh'))
-# model.add(Dense(n_nr, activation='tanh'))
-# model.add(Dense(n_nr, activation='tanh'))
-# model.add(Dense(1))  # Output layer with 1 unit for the target variable
+# Step 3: Build the Neural Network Surrogate Model
+model = Sequential()
+model.add(Dense(n_nr, activation='tanh', input_shape=(X_train_scaled.shape[1],))) 
+model.add(Dense(n_nr, activation='tanh'))
+model.add(Dense(n_nr, activation='tanh'))
+model.add(Dense(n_nr, activation='tanh'))
+model.add(Dense(1))  # Output layer with 1 unit for the target variable
 
-# # Define the learning rate schedule
-# def learning_rate_schedule(epoch):
-#     return lr / (1 + epoch * 0.1)  # Adjust the decay rate as needed
+# Define the learning rate schedule
+def learning_rate_schedule(epoch):
+    return lr / (1 + epoch * 0.1)  # Adjust the decay rate as needed
 
-# # Compile the model with Adam optimizer and the learning rate schedule
-# model.compile(loss='mean_squared_error', optimizer=Adam(learning_rate=lr))
+# Compile the model with Adam optimizer and the learning rate schedule
+model.compile(loss='mean_squared_error', optimizer=Adam(learning_rate=lr))
 
-# # Train the model with the learning rate schedule
-# history = model.fit(X_train_scaled, y_train_rep, epochs=n_epochs, batch_size=batch_size, verbose=2,
-#                     validation_data=(X_test_scaled, y_test_rep),
-#                     callbacks=[tf.keras.callbacks.LearningRateScheduler(learning_rate_schedule)])
+# Train the model with the learning rate schedule
+history = model.fit(X_train_scaled, y_train_rep, epochs=n_epochs, batch_size=batch_size, verbose=2,
+                    validation_data=(X_test_scaled, y_test_rep),
+                    callbacks=[tf.keras.callbacks.LearningRateScheduler(learning_rate_schedule)])
 
-# train_losses = history.history['loss']
-# val_losses = history.history['val_loss']
+train_losses = history.history['loss']
+val_losses = history.history['val_loss']
 
-# # Save the model
-# model.save("modelNo1_latin.h5")
+# Save the model
+model.save("modelNo1_latin.h5")
 
-# # Plot the training and testing errors
-# epochs = range(1, len(train_losses) + 1)
-# plt.plot(epochs, train_losses, 'b', label='Training Error')
-# plt.plot(epochs, val_losses, 'r', label='Testing Error')
-# plt.title('Training and Testing Error')
-# plt.xlabel('Epochs')
-# plt.ylabel('Error')
-# plt.yscale('log')
-# plt.legend()
-# plt.show()
+# Plot the training and testing errors
+epochs = range(1, len(train_losses) + 1)
+plt.plot(epochs, train_losses, 'b', label='Training Error')
+plt.plot(epochs, val_losses, 'r', label='Testing Error')
+plt.title('Training and Testing Error')
+plt.xlabel('Epochs')
+plt.ylabel('Error')
+plt.yscale('log')
+plt.legend()
+plt.show()
 
 
 # # model = tf.keras.models.load_model('./modelNo0.h5')
 # print(X_test_scaled)
 
 
-model = tf.keras.models.load_model('./modelNo1_latin.h5')
+# model = tf.keras.models.load_model('./modelNo1_latin.h5')
 # Step 8: Predict with the Model
 y_pred = model.predict(X_test_scaled).reshape(y_test.shape)
 
