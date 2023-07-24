@@ -1,5 +1,10 @@
 # MCMC-MEMS
-A small library for parameter identification on MEMS device through virtual prototyping, surrogate models and Monte Carlo Markov Chains
+Library for parameter identification in MEMS accelerometer devices thorugh computational bayesian approach.
+
+The project covers the following major topics:
+- Mechanics of Micro Systems, for the development of high fidelity benchmarks;
+- Reduced Order Modelling, for the creation of a real time digital twin of a MEMS device; 
+- Computational Statistics, to make data-driven prediction thanks to the digital twin.
 
 ## Table of Contents
 
