@@ -157,40 +157,37 @@ fprintf(fileID_V, '%s,%s,%s,%s,%s \n', "amplitudeX", "amplitudeY", "amplitudeZ",
                 
 
 % Generate the capacity values for each parameter combination
-for i = 1:numel(amplitudeX)
-    for j = 1:numel(amplitudeY)
-        for k = 1:numel(amplitudeZ)
-            for l = 1:numel(overetch_values)
-                amplitudeX_val = amplitudeX(i);
-                amplitudeY_val = amplitudeY(j);
-                amplitudeZ_val = amplitudeZ(k);
-                overetch = overetch_values(l);
-                
-                % Write the line to the CapacityDataset.csv file
-                fprintf(fileID_C, '%f,%f,%f,%f', amplitudeX_val, amplitudeY_val, amplitudeZ_val, overetch);
-                fprintf(fileID_U, '%f,%f,%f,%f', amplitudeX_val, amplitudeY_val, amplitudeZ_val, overetch);
-                fprintf(fileID_V, '%f,%f,%f,%f', amplitudeX_val, amplitudeY_val, amplitudeZ_val, overetch);
-                
+for i = 1:size(Capacity_dataset,1)
+    amplitudeX_val = Capacity_dataset{i}.AmplitudeX;
+    amplitudeY_val = Capacity_dataset{i}.AmplitudeY;
+    amplitudeZ_val = Capacity_dataset{i}.AmplitudeZ;
+    TX_val = Capacity_dataset{i}.T_X;
+    TY_val = Capacity_dataset{i}.T_Y;
+    TZ_val = Capacity_dataset{i}.T_Z;
+    overetch = Capacity_dataset{i}.Overetch;
+    
+    % Write the line to the CapacityDataset.csv file
+    fprintf(fileID_C, '%f,%f,%f,%f,%f,%f,%f', amplitudeX_val, amplitudeY_val, amplitudeZ_val, TX_val, TY_val, TZ_val, overetch);
+    fprintf(fileID_U, '%f,%f,%f,%f,%f,%f,%f', amplitudeX_val, amplitudeY_val, amplitudeZ_val, TX_val, TY_val, TZ_val, overetch);
+    fprintf(fileID_V, '%f,%f,%f,%f,%f,%f,%f', amplitudeX_val, amplitudeY_val, amplitudeZ_val, TX_val, TY_val, TZ_val, overetch);
+    
 
-                % Get the capacity vector values for the current combination
-                C_values = Capacity_dataset{i, j, k, l};
-                U_values = U_dataset{i, j, k, l};
-                V_values = V_dataset{i, j, k, l};
-                
-                % Add the vector values to the line
-                for m = 1:numel(C_values.Capacity)
-                    fprintf(fileID_C, ',%.27f', C_values.Capacity(m));
-                    fprintf(fileID_U, ',%.21f', U_values.Capacity(m));
-                    fprintf(fileID_V, ',%.21f', V_values.Capacity(m));
-                end
-     
-                % Add a newline character at the end of the line
-                fprintf(fileID_C, '\n');
-                fprintf(fileID_U, '\n');
-                fprintf(fileID_V, '\n');
-            end
-        end
+    % Get the capacity vector values for the current combination
+    C_values = Capacity_dataset{i};
+    U_values = U_dataset{i};
+    V_values = V_dataset{i};
+    
+    % Add the vector values to the line
+    for m = 1:numel(C_values.Capacity)
+        fprintf(fileID_C, ',%.27f', C_values.Capacity(m));
+        fprintf(fileID_U, ',%.21f', U_values.Capacity(m));
+        fprintf(fileID_V, ',%.21f', V_values.Capacity(m));
     end
+
+    % Add a newline character at the end of the line
+    fprintf(fileID_C, '\n');
+    fprintf(fileID_U, '\n');
+    fprintf(fileID_V, '\n');
 end
 
 % Close the Capacity CSV file

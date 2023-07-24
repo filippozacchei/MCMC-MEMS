@@ -3,7 +3,7 @@ clc
 clear all
 close all
 
-load Capacity_dataset.mat
+load Capacity.mat
 
 %%
 g = 9.81;
@@ -20,27 +20,22 @@ amplitudeY = linspace(0, 10 * g, 3);
 amplitudeZ = linspace(0, 0 * g, 3);
 
 % Set Overetch
-overetch_values = linspace(0.3, 0.5, 5 );      % Modify overetch value as desired
+overetch_values = linspace(0.3, 0.5, 5);      % Modify overetch value as desired
 
 % Plot the capacity variation over time for different parameter values
 figure('Position', [100, 100, 800, 500], 'Renderer', 'painters'); % Adjust figure size and resolution
 hold on;
 colors = jet(numel(overetch_values));
 time = 0:ts:tf;
-index =2:201;
+index=2:201;
 % Line and marker styles
 lineWidth = 1.5;
 markerSize = 6;
 
-for i =4:2:numel(amplitudeX)
-    for j = 1:numel(amplitudeY)
-        for k = 1:numel(amplitudeZ)
-            for l = 1:numel(overetch_values)
-                cap = Capacity_dataset{i,j,k,l};
-                plot(time(index), 1e15*(cap.Capacity(index)-cap.Capacity(index-1)), 'Color', colors(l, :), 'LineWidth', lineWidth, 'LineStyle','-.');
-            end 
-        end 
-    end 
+% Generate the capacity values for each parameter combination
+for i = 1:10:300
+    cap = Capacity_dataset{i};
+    plot(time(index), 1e15*(cap.Capacity(index)-cap.Capacity(index-1)), 'LineWidth', lineWidth, 'LineStyle','-.');
 end
 
 hold off;
