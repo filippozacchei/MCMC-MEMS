@@ -23,8 +23,9 @@ batch_size = 100
 n_nr = 32
 time = np.arange(0, 2.5e-3, 1e-5)
 lr = 0.01
-N = 20000
+N = 50000
 Nb = 0
+noise = 0.1**2
 
 # Define the file paths for the datasets
 C_dataset_filename = './DATA/CSV/CapacityDataset.csv'
@@ -147,11 +148,11 @@ line_width = 1.5
 from scipy.optimize import least_squares, curve_fit
 from scipy.stats import norm
 
-for i in range(X_test.shape[0]):
+for i in range(4,X_test.shape[0]):
 
     x_true = X_test[i,:]
-    x = Uniform(low=np.array([0.0,0.0,0.3]),high=np.array([100.0,1.5e-3,0.5]))
-    y = Gaussian(mean=A(x),cov=0.1)
+    x = Uniform(low=np.array([0.0,0.5e-3,0.3]),high=np.array([100.0,1.5e-3,0.5]))
+    y = Gaussian(mean=A(x),cov=noise)
 
     y_obs = y(x=np.array(x_true[[0,3,6]])).sample()
     print(y_obs.shape)
@@ -161,10 +162,7 @@ for i in range(X_test.shape[0]):
     # print(jac.shape)
     # stringa = "./Chains/Ax"+str(x_true[0])+"_Tx"+str(x_true[3])+"_Etch"+str(x_true[6])
 
-    # # Define the initial guess for the input parameters
-    # initial_params = [100.,
-    #                   1.5e-3,
-    #                   0.5]  # Adjust the initial guess as needed
+
 
     plt.plot(time, y_test[i, :], c=real_color, label='Real', linewidth=line_width)
     plt.plot(time, y_obs, c=surrogate_color, label='Surrogate', linewidth=line_width)
@@ -206,7 +204,7 @@ for i in range(X_test.shape[0]):
     x0 = np.array([100.0,1.5e-3,0.5])
     MHsampler = MH(target=posterior,
                    x0=x0,
-                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-3])),
+                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
                 #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
                    dim=3
                    )
