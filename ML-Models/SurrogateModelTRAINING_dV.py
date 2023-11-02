@@ -11,7 +11,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, BatchNormalization, LSTM
 from tensorflow.keras.optimizers import Adam
 
-sys.path.append('./DATA/')
+sys.path.append('../DATA/')
 
 from dataLoader import load_data
 
@@ -19,27 +19,26 @@ from dataLoader import load_data
 sampling_frequency = 1e-3 / 1e-5
 period = 2.5e-3
 n_periods = 2
-n_epochs = 1000
-batch_size = 250
+n_epochs = 100
+batch_size = 1500
 n_nr = 64
-time = np.arange(0, 5e-3, 2e-5)
-lr = 0.001
+time = np.arange(0, 1.5e-3, 1e-5)
+lr = 0.01
 
 # Define the file paths for the datasets
-C_dataset_filename = './DATA/CSV/C_period_training.csv'
-U_dataset_filename = './DATA/CSV/U_training.csv'
-V_dataset_filename = './DATA/CSV/V_training.csv'
+C_dataset_filename = '../DATA/CSV/C_training_HalfSine.csv'
 
 # Load the data using the load_data function and Obtain Capacity variation
 C_df = load_data(C_dataset_filename)
 C_df = C_df.dropna()
+print(C_df)
 dC_df = C_df.copy()
-dC_df.loc[:, 'Time=0.00ms':'Time=4.98ms'] = (C_df.loc[:, 'Time=0.02ms':'Time=5.00ms'].values \
-                                           - C_df.loc[:, 'Time=0.00ms':'Time=4.98ms'].values) / 1e-5
+dC_df.loc[:, 'Time=0.00ms':'Time=1.49ms'] = (C_df.loc[:, 'Time=0.01ms':'Time=1.50ms'].values \
+                                           - C_df.loc[:, 'Time=0.00ms':'Time=1.49ms'].values) / 1e-5
 
 # Select the input and output columns
-input_cols = ['AmplitudeX', 'T_X', 'Overetch']
-output_cols = dC_df.columns[7:-1]
+input_cols = ['Overetch', 'Offset', 'Thickness']
+output_cols = dC_df.columns[5:-1]
 
 # Split the data into train and test sets
 num_folds=5
@@ -99,12 +98,13 @@ X_test_scaled = scaler.transform(X_test_rep)
 # Create and compile the model here
 # Step 3: Build the Neural Network Surrogate Model
 model = Sequential()
-model.add(Dense(8, activation='tanh', input_shape=(X_train_scaled.shape[1],)))
-model.add(Dense(8, activation='tanh'))
+model.add(Dense(64, activation='tanh', input_shape=(X_train_scaled.shape[1],)))
 model.add(Dense(64, activation='tanh'))
 model.add(Dense(64, activation='tanh'))
-model.add(Dense(128, activation='tanh')) 
-model.add(Dense(250, activation='tanh')) 
+model.add(Dense(64, activation='tanh'))
+model.add(Dense(64, activation='tanh'))
+model.add(Dense(64, activation='tanh'))
+model.add(Dense(64, activation='tanh'))  
 model.add(Dense(1)) 
 # Output layer with 1 unit for the target variable
 # Define the learning rate schedule
@@ -125,8 +125,8 @@ model.compile(loss='MeanSquaredError', optimizer=Adam(learning_rate=lr))
 
 # Train the model with the learning rate schedule
 history = model.fit(X_train_scaled, y_train_rep, epochs=n_epochs, batch_size=batch_size, verbose=2,
-                    validation_data=(X_test_scaled, y_test_rep))
-                    # callbacks=[tf.keras.callbacks.LearningRateScheduler(learning_rate_schedule)])
+                    validation_data=(X_test_scaled, y_test_rep),
+                    callbacks=[tf.keras.callbacks.LearningRateScheduler(learning_rate_schedule)])
 
 train_losses = history.history['loss']
 val_losses = history.history['val_loss']
@@ -214,7 +214,7 @@ tuning_losses = []
 # avg_validation_loss = np.mean(validation_losses, axis=0)
 
 # Save the model
-# model.save("modelNo3_latin.h5")
+model.save("modelNoBo_dV_latin.h5")
 
 # Save the average validation loss or any other results as needed
 # np.save("validation_losses_activation.npy", tuning_losses)
@@ -243,8 +243,8 @@ for i in range(y_test.shape[0]):
 
     # Set title and adjust font size
     plt.title(
-        'Ax = {}; Tx = {:.2f}Hz, Overetch = {:.2f}'.format(
-                int(X_test[i, 0]),
+        'Overetch = {:.2f}; Offset = {:.2f}, Thickness = {:.2f}'.format(
+                X_test[i, 0],
                 X_test[i, 1],  
                 X_test[i, 2]),
                 fontsize=12)

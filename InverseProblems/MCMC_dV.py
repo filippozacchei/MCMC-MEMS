@@ -4,15 +4,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Add the directory containing the dataLoader module to the sys.path
-sys.path.append('./DATA/')
+sys.path.append('../DATA/')
 
 # Import the load_data function from the dataLoader modulec
 from dataLoader import load_data
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-
-# from tensorflow.python.ops.numpy_ops import np_config
-# np_config.enable_numpy_behavior()
 
 # Define Input Parameters
 sampling_frequency = 1e-3 / 1e-5
@@ -21,33 +18,33 @@ n_periods = 2
 n_epochs = 5000
 batch_size = 100
 n_nr = 32
-time = np.arange(0, 2.5e-3, 1e-5)
+time = np.arange(0, 1.5e-3, 1e-5)
 lr = 0.1
-N = 25000
-Nb = 0
-noise = 0.1**2
+N = 250
+Nb = 100
+noise = 10
 
 # Define the file paths for the datasets
-C_dataset_filename = './DATA/CSV/C_test.csv'
+C_dataset_filename = '../DATA/CSV/C_training_HalfSine.csv'
 
 # Import tensorflow for forwar model
 import tensorflow as tf
-model_path = './ML-Models/modelNo2_latin.h5'
+model_path = '../ML-Models/modelNo1_dV_latin.h5'
 forward_model_tf = tf.keras.models.load_model(model_path)
 
 # Load the data using the load_data function and Obtain Capacity variation
-C_dataset_filename = './DATA/CSV/C_training.csv'
+C_dataset_filename = '../DATA/CSV/C_training_HalfSine.csv'
 C_df = load_data(C_dataset_filename)
 C_df = C_df.dropna()
 print(C_df)
 
 dC_df = C_df.copy()
-dC_df.loc[:, 'Time=0.00ms':'Time=2.49ms'] = (C_df.loc[:, 'Time=0.01ms':'Time=2.50ms'].values \
-                                           - C_df.loc[:, 'Time=0.00ms':'Time=2.49ms'].values) / 1e-5
+dC_df.loc[:, 'Time=0.00ms':'Time=1.49ms'] = (C_df.loc[:, 'Time=0.01ms':'Time=1.50ms'].values \
+                                           - C_df.loc[:, 'Time=0.00ms':'Time=1.49ms'].values) / 1e-5
 
 # Select the input and output columns
-input_cols = ['AmplitudeX', 'AmplitudeY', 'AmplitudeZ', 'T_X', 'T_Y', 'T_Z', 'Overetch']
-output_cols = dC_df.columns[7:-1]
+input_cols = ['Overetch', 'Offset', 'Thickness']
+output_cols = dC_df.columns[5:-1]
 
 X_train, X_test, y_train, y_test = train_test_split(dC_df[input_cols].values,
                                                     1e12 * (dC_df[output_cols].values),     
@@ -79,16 +76,15 @@ X_train_scaled = scaler.fit_transform(X_train_rep)
 X_test_scaled = scaler.transform(X_test_rep)
 
 # Define the file paths for the datasets
-C_dataset_filename = './DATA/CSV/C_test.csv'
+C_dataset_filename = '../DATA/CSV/C_training_HalfSine.csv'
 # Load the data using the load_data function and Obtain Capacity variation
 C_df = load_data(C_dataset_filename)
 C_df = C_df.dropna()
 dC_df = C_df.copy()
-dC_df.loc[:, 'Time=0.00ms':'Time=2.49ms'] = (C_df.loc[:, 'Time=0.01ms':'Time=2.50ms'].values \
-                                           - C_df.loc[:, 'Time=0.00ms':'Time=2.49ms'].values) / 1e-5
+dC_df.loc[:, 'Time=0.00ms':'Time=1.49ms'] = (C_df.loc[:, 'Time=0.01ms':'Time=1.50ms'].values \
+                                           - C_df.loc[:, 'Time=0.00ms':'Time=1.49ms'].values) / 1e-5
 
-dC_test=dC_df #[dC_df["T_X"]==0.001]
-dC_test=dC_test[dC_test["AmplitudeX"]>1.0]
+dC_test=dC_df 
 X_test=dC_test[input_cols].values
 y_test=1e12 * dC_test[output_cols].values
 
@@ -101,22 +97,14 @@ X_test_scaled = scaler.transform(X_test_rep)
 def forward_model(x):
     x = tf.convert_to_tensor(np.array(x),dtype=tf.float32)
     output = forward_model_tensorflow(x).numpy().flatten()
-    if x[2] < 0.3 or x[2]> 0.5:
-        output *= 0.0
     return output
 
 def forward_model_tensorflow(x):
     # # Convert input_tensor to a TensorFlow tensor
     # Define constant values as TensorFlow tensors
-    constant_values = tf.constant([50.0, 50.0, 1e-3, 1e-3], dtype=tf.float32)
-    # Stack the tensors along axis 0 to achieve the desired operation
     concatenated_tensor = tf.stack([
         x[0],
-        constant_values[0],
-        constant_values[1],
         x[1],
-        constant_values[2],
-        constant_values[3],
         x[2],
     ])
     # Reshape and repeat to match your params_rep construction
@@ -163,7 +151,7 @@ from cuqi.geometry import Continuous1D, Discrete
 
 A = Model(forward=forward_model,
           range_geometry=Continuous1D(len(time)),
-          domain_geometry=Discrete(["Acc","Tx","Etch"]))
+          domain_geometry=Discrete(["Overetch","Offset","Thickness"]))
 
 # Define colors and line styles
 real_color = 'red'
@@ -173,7 +161,7 @@ line_width = 1.5
 from scipy.optimize import least_squares, curve_fit
 from scipy.stats import norm
 
-for i in range(300,X_test.shape[0],100):
+for i in range(X_test.shape[0]):
 
     x_true = X_test[i,:]
     print(x_true)
@@ -185,48 +173,48 @@ for i in range(300,X_test.shape[0],100):
     # print(y_obs)
     # jac = compute_jacobian(x_true[[0,3,6]])
     # print(jac.shape)
-    stringa = "./Chains/Ax"+str(x_true[0])+"_Tx"+str(x_true[3])+"_Etch"+str(x_true[6])
+    stringa = "../Chains_dV/Ax"+str(x_true[0])+"_Tx"+str(x_true[1])+"_Etch"+str(x_true[2])
 
-    # plt.figure()
-    # plt.plot(time, y_test[i, :], c=real_color, label='Real', linewidth=line_width)
-    # plt.plot(time, y_obs, '.b', label='Noisy', linewidth=line_width)
-    # # Set axis labels
-    # plt.xlabel('Time [ms]')
-    # plt.ylabel(r'$\Delta C$ [fF/s]')
-    # # Set title with relevant information
-    # plt.title(
-    #     f'Ax = {int(X_test[i, 0]/9.81)}g; Tx = {1e3 * X_test[i, 3]:.2f}ms; Overetch = {X_test[i, 6]:.2f}μm',
-    #     fontsize=10, loc='center')
-    # plt.legend(loc='upper right', fontsize=10)
-    # plt.grid(True, linestyle='--', alpha=0.5)
-    # plt.show()
+    plt.figure()
+    plt.plot(time, y_test[i, :], c=real_color, label='Real', linewidth=line_width)
+    plt.plot(time, y_obs, '.b', label='Noisy', linewidth=line_width)
+    # Set axis labels
+    plt.xlabel('Time [ms]')
+    plt.ylabel(r'$\Delta C$ [fF/s]')
+    # Set title with relevant information
+    plt.title(
+        f'Overetch = {X_test[i, 0]}μm; Offset = {X_test[i, 1]:.2f}μm; Thickness = {X_test[i, 2]:.2f}μm',
+        fontsize=10, loc='center')
+    plt.legend(loc='upper right', fontsize=10)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.show()
 
 
-    x0 = np.array([100.0,1.5e-3,0.5])
-    x1 = np.array([100.0,1.5e-3,0.5])
-    x2 = np.array([10.0,0.5e-3,0.3])
-    x3 = np.array([50.0,1e-3,0.4])
-    x4 = np.array([0.0,1.5e-3,0.5])
-    x5 = np.array([100.0,0.5e-3,0.3])
+    x0 = np.array([0.5,-0.5,31.0])
+    x1 = np.array([0.5,0.5,31.0])
+    x2 = np.array([0.1,0.5,29.0])
+    x3 = np.array([0.3,-0.5,30.0])
+    x4 = np.array([0.1,0.5,31.0])
+    x5 = np.array([0.5,1/5,29.0])
 
     # Perform least squares optimization
     result = least_squares(objective_function,
                            x0,
                            args=([y_obs]), 
-                           bounds=([0.,
-                                    0.0005,
-                                    0.3],
-                                   [100.,
-                                   0.0015,
-                                   0.5]), 
+                           bounds=([0.1,
+                                    -0.5,
+                                    29.0],
+                                   [0.5,
+                                   0.5,
+                                   31.0]), 
                            jac='3-point')
 
     optimized_params = result.x
     print(optimized_params)
     cov_matrix = np.linalg.inv(result.jac.T @ result.jac)
 
-    # x = Uniform(low=np.array([0.0,0.5e-3,0.3]),high=np.array([100.0,1.5e-3,0.5]))
-    x = Gaussian(mean=np.array([x_true[0],x_true[3],0.4]),cov=np.array([1e-2,1e-10,1e-4]))
+    x = Uniform(low=np.array([0.1,-0.5,29.0]),high=np.array([0.5,0.5,31.0]))
+    # x = Gaussian(mean=np.array([x_true[0],x_true[0],0.4]),cov=np.array([1e-2,1e-10,1e-4]))
     # acc = Gaussian(mean=x_true[0],cov=0.1**2)
     y = Gaussian(mean=A(x), cov=noise*np.eye(len(time)))
 
@@ -237,45 +225,57 @@ for i in range(300,X_test.shape[0],100):
     posterior = JointDistribution(x, y)(y=y_obs)
     
     MHsampler = MH(target=posterior,
-                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
-                   x0=x1
+                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1e-4,1e-4,1e-4])),
+                   x0=x0
                 #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
                    )
     samplesMH = MHsampler.sample_adapt(N,Nb)
 
-    # print(samplesMH.compute_ci())
-    # print(samplesMH.mean())
+    plt.figure()
+    samplesMH.plot_trace(variable_indices=[0])
+    plt.show()
+
+    plt.figure()
+    samplesMH.plot_trace(variable_indices=[1])
+    plt.show()
+
+    plt.figure()
+    samplesMH.plot_trace(variable_indices=[2])
+    plt.show()
+
+    print(samplesMH.compute_ci())
+    print(samplesMH.mean())
 
 
-    MHsampler2 = MH(target=posterior,
-                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
-                   x0=x2
-                #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
-                   )
-    samplesMH2 = MHsampler2.sample_adapt(N,Nb)
+    # MHsampler2 = MH(target=posterior,
+    #                proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
+    #                x0=x2
+    #             #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
+    #                )
+    # samplesMH2 = MHsampler2.sample_adapt(N,Nb)
 
-    MHsampler3 = MH(target=posterior,
-                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
-                   x0=x3
-                #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
-                   )
-    samplesMH3 = MHsampler3.sample_adapt(N,Nb)
+    # MHsampler3 = MH(target=posterior,
+    #                proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
+    #                x0=x3
+    #             #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
+    #                )
+    # samplesMH3 = MHsampler3.sample_adapt(N,Nb)
 
-    MHsampler4 = MH(target=posterior,
-                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
-                   x0=x4
-                #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
-                   )
-    samplesMH4 = MHsampler4.sample_adapt(N,Nb)
+    # MHsampler4 = MH(target=posterior,
+    #                proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
+    #                x0=x4
+    #             #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
+    #                )
+    # samplesMH4 = MHsampler4.sample_adapt(N,Nb)
 
-    MHsampler5 = MH(target=posterior,
-                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
-                   x0=x5
-                #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
-                   )
-    samplesMH5 = MHsampler5.sample_adapt(N,Nb)
-    a = samplesMH.compute_rhat([samplesMH2,samplesMH3,samplesMH4,samplesMH5])
-    print(a)
+    # MHsampler5 = MH(target=posterior,
+    #                proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1.0,1e-8,1e-4])),
+    #                x0=x5
+    #             #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
+    #                )
+    # samplesMH5 = MHsampler5.sample_adapt(N,Nb)
+    # a = samplesMH.compute_rhat([samplesMH2,samplesMH3,samplesMH4,samplesMH5])
+    # print(a)
 
     # np.savetxt(stringa+'_1', samplesMH.samples,  fmt='%.4e')
     # np.savetxt(stringa+'_2', samplesMH2.samples, fmt='%.4e')
@@ -317,13 +317,11 @@ for i in range(300,X_test.shape[0],100):
     # # samplesMH=samplesMH.burnthin(0,4)
     # Ni = samplesMH.Ns
 
-    # # plt.figure()
-    # # samplesMH.plot_trace(variable_indices=[0])
-    # # plt.show()
+ 
 
     # # # import numpy as np
     # # # import matplotlib.pyplot as plt
-    # # from scipy import stats
+    from scipy import stats
 
     # num_parameters = 3
 
@@ -358,37 +356,37 @@ for i in range(300,X_test.shape[0],100):
 
 
 
-    # # for i in range(0,3):
-    # #     parameter_samples = samplesMH.samples[i, :]
-    # #     plt.figure()
+    for i in range(0,3):
+        parameter_samples = samplesMH.samples[i, :]
+        plt.figure()
 
-    # #     # Plot the density of the samples
-    # #     kernel_density = stats.gaussian_kde(parameter_samples)
-    # #     x_range = np.linspace(np.min(parameter_samples), np.max(parameter_samples), 1000)
-    # #     plt.plot(x_range, kernel_density(x_range), label='Density', linewidth=2)
+        # Plot the density of the samples
+        kernel_density = stats.gaussian_kde(parameter_samples)
+        x_range = np.linspace(np.min(parameter_samples), np.max(parameter_samples), 1000)
+        plt.plot(x_range, kernel_density(x_range), label='Density', linewidth=2)
 
-    # #     # Plot vertical line at the exact parameter
-    # #     plt.axvline(x_true[3*i], color='red', label='Exact', linestyle='-', linewidth=2)
+        # Plot vertical line at the exact parameter
+        plt.axvline(x_true[i], color='red', label='Exact', linestyle='-', linewidth=2)
 
-    # #     # Calculate and plot mean and mode
-    # #     mean = np.mean(parameter_samples)
-    # #     mode = x_range[np.argmax(kernel_density(x_range))]
-    # #     plt.axvline(mean, color='green', label='Mean', linestyle='--', linewidth=2)
-    # #     plt.axvline(mode, color='blue', label='Mode', linestyle='--', linewidth=2)
-    # #     plt.axvline(optimized_params[i], color='black', label='LS', linestyle='--', linewidth=2)
+        # Calculate and plot mean and mode
+        mean = np.mean(parameter_samples)
+        mode = x_range[np.argmax(kernel_density(x_range))]
+        plt.axvline(mean, color='green', label='Mean', linestyle='--', linewidth=2)
+        plt.axvline(mode, color='blue', label='Mode', linestyle='--', linewidth=2)
+        plt.axvline(optimized_params[i], color='black', label='LS', linestyle='--', linewidth=2)
 
-    # #     # Calculate and highlight the 95% credibility interval
-    # #     lower_bound, upper_bound = np.percentile(parameter_samples, [2.5, 97.5])
-    # #     plt.fill_between(x_range, 0, kernel_density(x_range), where=((x_range >= lower_bound) & (x_range <= upper_bound)), alpha=0.3, color='gray', label='95% C.I.')
+        # Calculate and highlight the 95% credibility interval
+        lower_bound, upper_bound = np.percentile(parameter_samples, [2.5, 97.5])
+        plt.fill_between(x_range, 0, kernel_density(x_range), where=((x_range >= lower_bound) & (x_range <= upper_bound)), alpha=0.3, color='gray', label='95% C.I.')
 
-    # #     # Set axis labels and title
-    # #     plt.xlabel(['Amplitude','Period','Overetch'][i])
-    # #     plt.ylabel('Density')
-    # #     # Place the legend on the right side of the plot
-    # #     plt.legend()
-    # #     # Adjust the spacing between subplots
-    # #     plt.show()
-    # # num_samples = samplesMH.samples.shape[1]
+        # Set axis labels and title
+        plt.xlabel(['Overetch','Offset','Thickness'][i])
+        plt.ylabel('Density')
+        # Place the legend on the right side of the plot
+        plt.legend()
+        # Adjust the spacing between subplots
+        plt.show()
+    num_samples = samplesMH.samples.shape[1]
 
     # # for i in range(3):
     # #     parameter_samples = samplesMH.samples[i, :]
@@ -426,77 +424,77 @@ for i in range(300,X_test.shape[0],100):
     # Assuming you have the samples and parameter_names defined
 
     # num_parameters = len(parameter_names)
-    samples = samplesMH.samples
-    num_samples = samples.shape[1]
-    step_size = 100  # Number of points to add in each frame
-    frames = range(0, num_samples, step_size)
+    # samples = samplesMH.samples
+    # num_samples = samples.shape[1]
+    # step_size = 100  # Number of points to add in each frame
+    # frames = range(0, num_samples, step_size)
 
-    from matplotlib.animation import FuncAnimation
+    # from matplotlib.animation import FuncAnimation
 
-    x_min, x_max = 0, 100
-    y_min, y_max = 0.3, 0.5
-    print(x_true)
-    def update(frame):
-        plt.clf()
-        plt.figure()
-        i = 0;
-        j = 2
-            #    if i == j:
-            #         # Diagonal plots: Histograms
-            #         plt.hist(samples[:frame+1, i], bins=30, color='b', alpha=0.7)
-            #         plt.xlabel(parameter_names[i])
-            #         plt.ylabel('Frequency')
-                # else:
-                    # Contour plots for parameter pairs
-        # Set the axis limits for X and Y
-        plt.xlim(x_min, x_max)
-        plt.ylim(y_min, y_max)
+    # x_min, x_max = 0, 100
+    # y_min, y_max = 0.3, 0.5
+    # print(x_true)
+    # def update(frame):
+    #     plt.clf()
+    #     plt.figure()
+    #     i = 0;
+    #     j = 2
+    #         #    if i == j:
+    #         #         # Diagonal plots: Histograms
+    #         #         plt.hist(samples[:frame+1, i], bins=30, color='b', alpha=0.7)
+    #         #         plt.xlabel(parameter_names[i])
+    #         #         plt.ylabel('Frequency')
+    #             # else:
+    #                 # Contour plots for parameter pairs
+    #     # Set the axis limits for X and Y
+    #     plt.xlim(x_min, x_max)
+    #     plt.ylim(y_min, y_max)
 
-        x = samples[i, frame:frame+1000]
-        y = samples[j, frame:frame+1000]    
-        plt.scatter(x, y, s=10, alpha=0.1)
+    #     x = samples[i, frame:frame+1000]
+    #     y = samples[j, frame:frame+1000]    
+    #     plt.scatter(x, y, s=10, alpha=0.1)
 
-        x2 = samplesMH2.samples[i, frame:frame+1000]
-        y2 = samplesMH2.samples[j, frame:frame+1000]    
-        plt.scatter(x2, y2, s=10, color='green', alpha=0.1) 
+    #     # x2 = samplesMH2.samples[i, frame:frame+1000]
+    #     # y2 = samplesMH2.samples[j, frame:frame+1000]    
+    #     # plt.scatter(x2, y2, s=10, color='green', alpha=0.1) 
 
-        x3 = samplesMH3.samples[i, frame:frame+1000]
-        y3 = samplesMH3.samples[j, frame:frame+1000]    
-        plt.scatter(x3, y3, s=10, color='orange', alpha=0.1) 
+    #     # x3 = samplesMH3.samples[i, frame:frame+1000]
+    #     # y3 = samplesMH3.samples[j, frame:frame+1000]    
+    #     # plt.scatter(x3, y3, s=10, color='orange', alpha=0.1) 
 
-        x4 = samplesMH4.samples[i, frame:frame+1000]
-        y4 = samplesMH4.samples[j, frame:frame+1000]    
-        plt.scatter(x4, y4, s=10, color='grey', alpha=0.1) 
+    #     # x4 = samplesMH4.samples[i, frame:frame+1000]
+    #     # y4 = samplesMH4.samples[j, frame:frame+1000]    
+    #     # plt.scatter(x4, y4, s=10, color='grey', alpha=0.1) 
 
-        x5 = samplesMH5.samples[i, frame:frame+1000]
-        y5 = samplesMH5.samples[j, frame:frame+1000]    
-        plt.scatter(x5, y5, s=10, color='purple', alpha=0.1) 
+    #     # x5 = samplesMH5.samples[i, frame:frame+1000]
+    #     # y5 = samplesMH5.samples[j, frame:frame+1000]    
+    #     # plt.scatter(x5, y5, s=10, color='purple', alpha=0.1) 
 
-        plt.scatter(x_true[0],x_true[6], marker='x', color='red', s=10, alpha=1)
+    #     plt.scatter(x_true[0],x_true[6], marker='x', color='red', s=10, alpha=1)
 
-        # Define the X-axis tick positions and labels
-        x_ticks = np.arange(0, 10, 1)  # Create ticks from 1 to 10 (inclusive)
-        x_tick_labels = [f"{x}g" for x in x_ticks]  # Format tick labels as "1g," "2g," etc.
-        x_ticks = np.arange(0, 100, 10)  # Create ticks from 1 to 10 (inclusive)
+    #     # Define the X-axis tick positions and labels
+    #     x_ticks = np.arange(0, 10, 1)  # Create ticks from 1 to 10 (inclusive)
+    #     x_tick_labels = [f"{x}g" for x in x_ticks]  # Format tick labels as "1g," "2g," etc.
+    #     x_ticks = np.arange(0, 100, 10)  # Create ticks from 1 to 10 (inclusive)
 
-        # Set the X-axis ticks and labels
-        plt.xticks(x_ticks, x_tick_labels)
+    #     # Set the X-axis ticks and labels
+    #     plt.xticks(x_ticks, x_tick_labels)
 
-        plt.xlabel("Amplitude")
-        plt.ylabel("Overetch (μm)")
-        plt.tight_layout()
+    #     plt.xlabel("Amplitude")
+    #     plt.ylabel("Overetch (μm)")
+    #     plt.tight_layout()
 
-    ani = FuncAnimation(plt.gcf(), update, frames=frames, repeat=False)
+    # ani = FuncAnimation(plt.gcf(), update, frames=frames, repeat=False)
 
-    for it, frame in enumerate(frames):
-        update(frame)
-        plt.savefig(f'frames/frameG_{it:04d}.png', dpi=100)
-        plt.clf()
+    # for it, frame in enumerate(frames):
+    #     update(frame)
+    #     plt.savefig(f'frames/frameG_{it:04d}.png', dpi=100)
+    #     plt.clf()
 
-    # To combine the frames into a video using FFmpeg:
-    # ffmpeg -i frames/frame_%04d.png -c:v libx264 -vf "fps=30" output.mp4
+    # # To combine the frames into a video using FFmpeg:
+    # # ffmpeg -i frames/frame_%04d.png -c:v libx264 -vf "fps=30" output.mp4
 
-    plt.show()
+    # plt.show()
 
     # plt.figure()
     # Ni=N
