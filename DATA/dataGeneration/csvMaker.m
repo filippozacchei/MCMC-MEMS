@@ -3,7 +3,7 @@ clear all
 close all
 
 % load C_period_training.mat
-load U_testing__halfSine.mat
+load U_testing_halfSine.mat
 % load V_period_training.mat
 
 % Open the Capacity CSV file in append modes
@@ -15,10 +15,9 @@ fileID_U = fopen('U_testing_HalfSine.csv', 'a');
 
 fprintf(fileID_C, '%s,%s,%s,%s,%s,%s, \n', "overetch", "offset", "thickness", "ts", "tf", "Values");
 fprintf(fileID_U, '%s,%s,%s,%s,%s,%s, \n', "overetch", "offset", "thickness", "ts", "tf", "Values");
-% fprintf(fileID_V, '%s,%s,%s,%s,%s,%s,%s,%s \n', "amplitudeX", "amplitudeY", "amplitudeZ", "Tx", "Ty","Tz", "overetch", "Values");
       
 % Define the capacity function
-capacity = @(x, offset, thickness, overetch) 10 * 8.854e-12 * thickness * (101 - 2 * overetch) * (1 ./ (1.2 + 2 * overetch - offset - x) ...
+capacity = @(x, offset, thickness, overetch) 10 * 8.854e-12 * thickness * 1e-6 * (101 - 2 * overetch) * (1 ./ (1.2 + 2 * overetch - offset - x) ...
     - 1./ (1.2 + 2 * overetch + offset + x));
 
 %%
