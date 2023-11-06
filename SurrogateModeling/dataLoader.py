@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import json
 from sklearn.model_selection import train_test_split, KFold
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 class ColumnMismatchError(Exception):
     """Exception raised for a mismatch in expected and actual CSV columns."""
@@ -56,7 +56,8 @@ def load_data(config_file):
     - ColumnMismatchError: If the actual and expected column counts do not match.
     """
     try:
-        df = pd.read_csv(config_file['DATASET_PATH'], comment='#')
+        df = pd.read_csv(config_file['DATASET_PATH'], dtype=str, comment='#', float_precision='high', header=None)
+        df = df.astype(np.float64)
     except FileNotFoundError:
         raise FileNotFoundError(f"File not found: {config_file['DATASET_PATH']}")
 
@@ -162,8 +163,10 @@ def scale_data(X_train, X_test, scaler=None):
     Returns:
     - Scaled training and testing features, and the scaler.
     """
-    if scaler is None:
-        scaler = MinMaxScaler()
+    if scaler is None or scaler == 'standard':
+        scaler = StandardScaler()
+    elif scaler == 'minmax':
+        scaler = MinMaxScaler
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
     

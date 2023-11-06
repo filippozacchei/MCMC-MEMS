@@ -7,13 +7,13 @@ from tensorflow.keras.optimizers import Adam
 # CONFIGURATION FILE
 CONFIGURATION_FILE = './Config_files/config_VoltageSignal.json'
 
-def main():
+def train(config_file):
     try:
-        config = parse_config(CONFIGURATION_FILE)    
+        config = parse_config(config_file)    
         
         # Data preparation
         C_df, dC_df = load_data_derivative(config)
-        X_train, X_test, y_train, y_test = split_data(dC_df, config)
+        X_train, X_test, y_train, y_test = split_data(C_df, config)
 
         # Flatten the output and concatenate time column
         time = np.arange(0, config['TIME_FINAL'], config['TIME_INTERVAL'])
@@ -32,10 +32,10 @@ def main():
     
 
         ## TRAIN THE MODEL
-        lr = initial_lr=config['LEARNING_RATE']
+        lr = config['LEARNING_RATE']
 
         # Define learning rate scheduler within main for access to config
-        def learning_rate_schedule(epoch, decay_rate=config['DECAY_RATE']):
+        def learning_rate_schedule(epoch, learning_rate=lr, decay_rate=config['DECAY_RATE']):
             return lr / (1. + epoch * decay_rate)
 
         model.compile(loss='MeanSquaredError', optimizer=Adam(learning_rate=config['LEARNING_RATE']))
@@ -50,8 +50,7 @@ def main():
         # Save model
         save_model(model, config['MODEL_PATH'])
 
-        # Model evaluation and plotting
-        evaluate_and_plot(model, X_test_scaled, y_test, time)
+        return model
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -59,4 +58,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    train(CONFIGURATION_FILE)

@@ -19,11 +19,12 @@ def build_model(input_shape, n_neurons=64, n_layers=6, activation_func='tanh', i
     - model (Sequential): A compiled Keras sequential model.
     """
     model = Sequential()
-    model.add(Dense(n_neurons, activation=activation_func, input_shape=(input_shape,), kernel_initializer=initializer))
+    model.add(Dense(n_neurons, input_shape=(input_shape,), kernel_initializer=initializer))
     for _ in range(n_layers):
         model.add(Dense(n_neurons, activation=activation_func, kernel_initializer=initializer))
     model.add(Dense(1))  # Output layer
     return model
+
 
 def plot_training_history(history):
     """
@@ -53,22 +54,4 @@ def save_model(model, model_path):
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     model.save(model_path)
 
-def evaluate_and_plot(model, X_test, y_test, time_steps, max_plots=5):
-    """
-    Evaluates the model on test data and plots the predictions against the true values.
 
-    Parameters:
-    - model: The trained Keras model to evaluate.
-    - X_test (array-like): Test features.
-    - y_test (array-like): True values for the test features.
-    - time_steps (array-like): The time steps for each feature in X_test.
-    - max_plots (int): The maximum number of plots to display.
-    """
-    y_pred = model.predict(X_test).reshape(y_test.shape)
-    for i in range(min(len(X_test), max_plots)):
-        plt.figure()
-        plt.plot(time_steps, y_test[i, :], label='Actual')
-        plt.plot(time_steps, y_pred[i, :], label='Predicted')
-        plt.legend()
-        plt.title(f'Test Sample {i+1}')
-        plt.show()

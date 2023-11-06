@@ -41,7 +41,7 @@ for i = 1:size(X_dataset,1)
     % Add the vector values to the line
     for m = 1:numel(cap.Displacement)
         fprintf(fileID_U, ',%.21f', cap.Displacement(m));
-        fprintf(fileID_C, ',%.21f', capacity_values(m));
+        fprintf(fileID_C, ',%.27f', capacity_values(m));
         pause(0.0001)
     end
 
