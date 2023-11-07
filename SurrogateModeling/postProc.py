@@ -43,7 +43,7 @@ def main():
             model = tf.keras.models.load_model(config["MODEL_PATH"])
 
         # Evaluate and Plot
-        plot_predictions(model, X_test_scaled, y_test, time, max_plots=20)
+        plot_predictions(model, X_test_scaled, y_test, time, max_plots=262)
 
     except Exception as e:
         print(f"An error occurred: {e}")

@@ -19,7 +19,7 @@ def build_model(input_shape, n_neurons=64, n_layers=6, activation_func='tanh', i
     - model (Sequential): A compiled Keras sequential model.
     """
     model = Sequential()
-    model.add(Dense(n_neurons, input_shape=(input_shape,), kernel_initializer=initializer))
+    model.add(Dense(n_neurons, activation=activation_func,input_shape=(input_shape,), kernel_initializer=initializer))
     for _ in range(n_layers):
         model.add(Dense(n_neurons, activation=activation_func, kernel_initializer=initializer))
     model.add(Dense(1))  # Output layer

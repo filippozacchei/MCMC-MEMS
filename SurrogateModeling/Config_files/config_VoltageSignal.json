@@ -6,8 +6,8 @@
     "TIME_COL_SECOND_END": "Time=1.50ms",
     "DATASET_PATH": "../DATA/CSV/C_testing_HalfSine.csv",
     "MODEL_PATH": "./Saved_models/model_VoltageSignal.h5",
-    "N_EPOCHS": 1000,
-    "BATCH_SIZE": 4500,
+    "N_EPOCHS": 10000,
+    "BATCH_SIZE": 9000,
     "LEARNING_RATE": 0.001,
     "DECAY_RATE": 0.01,
     "TEST_SIZE": 0.2,
@@ -25,5 +25,5 @@
     "MAX_OFFSET": 0.5,
     "MIN_THICKNESS": 29.0,
     "MAX_THICKNESS": 31.0,
-    "TRAINING": true
+    "TRAINING": false
 }
