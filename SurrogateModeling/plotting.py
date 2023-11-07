@@ -40,22 +40,65 @@ def plot_train_test(X_train, X_test, feature_labels=None, features_ticks=None, d
     plt.show()
     return 
 
-def plot_predictions(model, X_test, y_test, time_steps, max_plots=5):
+def plot_predictions(model, y_pred, y_test, time_steps, max_plots=5):
     """
     Evaluates the model on test data and plots the predictions against the true values.
 
     Parameters:
     - model: The trained Keras model to evaluate.
-    - X_test (array-like): Test features.
+    - y_pred (array-like): Predicted values for the test features.
     - y_test (array-like): True values for the test features.
     - time_steps (array-like): The time steps for each feature in X_test.
     - max_plots (int): The maximum number of plots to display.
     """
-    y_pred = model.predict(X_test).reshape(y_test.shape)
-    for i in range(min(len(X_test), max_plots)):
+    for i in range(min(y_pred.shape[0], max_plots)):
         plt.figure()
         plt.plot(time_steps, y_test[i, :], label='Actual')
         plt.plot(time_steps, y_pred[i, :], label='Predicted')
         plt.legend()
         plt.title(f'Test Sample {i+1}')
         plt.show()
+
+def plot_error_heatmap(errors, x_ticks=None, y_ticks=None, x_label='', y_label='', title='Relative Error', cmap='viridis', digits='.2f'):
+    """Plots a heatmap for the given error matrix.
+    
+    Parameters:
+        errors (np.ndarray): A 2D array of errors to plot in the heatmap.
+        x_ticks (list): A list of tick values for the x-axis.
+        y_ticks (list): A list of tick values for the y-axis.
+        x_label (str): Label for the x-axis.
+        y_label (str): Label for the y-axis.
+        title (str): Title for the heatmap.
+        cmap (str): Colormap to use for plotting.
+    """
+    fig, ax = plt.subplots(figsize=(10, 6))
+    cax = ax.matshow(errors, cmap=cmap)
+    fig.colorbar(cax)
+    ax.set_xticks(np.arange(len(x_ticks)) if x_ticks is not None else [])
+    ax.set_yticks(np.arange(len(y_ticks)) if y_ticks is not None else [])
+    ax.set_xticklabels([f'{tick:{digits}}' for tick in x_ticks] if x_ticks is not None else [])
+    ax.set_yticklabels([f'{tick:{digits}}' for tick in y_ticks] if y_ticks is not None else [])
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_title(title)
+    plt.show()
+
+def calculate_error_heatmap(y_pred, y_test, x_ticks, y_ticks):
+    """Calculates and returns a matrix of errors between predictions and actual test values.
+    
+    Parameters:
+        y_pred (np.ndarray): Predicted values.
+        y_test (np.ndarray): Actual test values.
+        x_ticks (list): List of tick values corresponding to columns of the error matrix.
+        y_ticks (list): List of tick values corresponding to rows of the error matrix.
+
+    Returns:
+        np.ndarray: A 2D array of calculated errors.
+    """
+    errors = np.zeros((len(y_ticks), len(x_ticks)))
+    for i, (pred, true) in enumerate(zip(y_pred, y_test)):
+        err = np.linalg.norm(pred - true, ord=1) / np.linalg.norm(true, ord=1)
+        row, col = divmod(i, len(x_ticks))
+        errors[row, col] = err
+        print(row,col)
+    return errors

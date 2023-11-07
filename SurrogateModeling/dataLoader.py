@@ -32,7 +32,8 @@ def parse_config(config_path):
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
     required_keys = {'DATASET_PATH', 'INPUT_COLS', 'TIME_COL_START', 'TIME_COL_END',
-                     'TIME_COL_SECOND', 'TIME_COL_SECOND_END', 'Y_SCALING_FACTOR', 'TEST_SIZE', 'RANDOM_STATE'}
+                     'TIME_COL_SECOND', 'TIME_COL_SECOND_END', 'Y_SCALING_FACTOR', 'TEST_SIZE', 'RANDOM_STATE',
+                     'MIN_OVERETCH', 'MAX_OVERETCH', 'MIN_OFFSET', 'MAX_OFFSET', 'MIN_THICKNESS', 'MAX_THICKNESS'}
     if not required_keys.issubset(config.keys()):
         missing_keys = required_keys - set(config.keys())
         raise ValueError(f"Missing required config keys: {missing_keys}")

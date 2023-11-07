@@ -5,11 +5,18 @@ import matplotlib.pyplot as plt
 
 # Add the directory containing the dataLoader module to the sys.path
 sys.path.append('../DATA/')
+sys.path.append('../SurrogateModeling/')
 
 # Import the load_data function from the dataLoader modulec
-from dataLoader import load_data
+from dataLoader import *
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+
+# CONFIGURATION FILE
+CONFIGURATION_FILE = '../SurrogateModeling/Config_files/config_VoltageSignal.json'
+config = parse_config(CONFIGURATION_FILE)  
+
+
 
 # Define Input Parameters
 sampling_frequency = 1e-3 / 1e-5
@@ -18,36 +25,28 @@ n_periods = 2
 n_epochs = 5000
 batch_size = 100
 n_nr = 32
-time = np.arange(0, 1.5e-3, 1e-5)
+time = np.arange(0, 1.50e-3, 1e-5)
 lr = 0.1
-N = 250
-Nb = 100
-noise = 10
+N = int(1e6)
+Nb = int(1e6)
+noise = 0.01
 
-# Define the file paths for the datasets
-C_dataset_filename = '../DATA/CSV/C_training_HalfSine.csv'
 
 # Import tensorflow for forwar model
 import tensorflow as tf
-model_path = '../ML-Models/modelNo1_dV_latin.h5'
+model_path = '../SurrogateModeling/' + config['MODEL_PATH']
 forward_model_tf = tf.keras.models.load_model(model_path)
 
-# Load the data using the load_data function and Obtain Capacity variation
-C_dataset_filename = '../DATA/CSV/C_training_HalfSine.csv'
-C_df = load_data(C_dataset_filename)
+C_df = load_data(config)
 C_df = C_df.dropna()
 print(C_df)
 
-dC_df = C_df.copy()
-dC_df.loc[:, 'Time=0.00ms':'Time=1.49ms'] = (C_df.loc[:, 'Time=0.01ms':'Time=1.50ms'].values \
-                                           - C_df.loc[:, 'Time=0.00ms':'Time=1.49ms'].values) / 1e-5
-
 # Select the input and output columns
 input_cols = ['Overetch', 'Offset', 'Thickness']
-output_cols = dC_df.columns[5:-1]
+output_cols = C_df.columns[5:-1]
 
-X_train, X_test, y_train, y_test = train_test_split(dC_df[input_cols].values,
-                                                    1e12 * (dC_df[output_cols].values),     
+X_train, X_test, y_train, y_test = train_test_split(C_df[input_cols].values,
+                                                    1e15 * (C_df[output_cols].values),     
                                                     test_size=0.2, 
                                                     random_state=2)
 
@@ -71,22 +70,17 @@ X_train_rep = X_train_rep[perm]
 y_train_rep = y_train_rep[perm]
 
 # Step 3: Preprocess the Data
-scaler = MinMaxScaler()
+scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train_rep)
 X_test_scaled = scaler.transform(X_test_rep)
 
 # Define the file paths for the datasets
-C_dataset_filename = '../DATA/CSV/C_training_HalfSine.csv'
-# Load the data using the load_data function and Obtain Capacity variation
-C_df = load_data(C_dataset_filename)
-C_df = C_df.dropna()
-dC_df = C_df.copy()
-dC_df.loc[:, 'Time=0.00ms':'Time=1.49ms'] = (C_df.loc[:, 'Time=0.01ms':'Time=1.50ms'].values \
-                                           - C_df.loc[:, 'Time=0.00ms':'Time=1.49ms'].values) / 1e-5
+C_dataset_filename = '../DATA/CSV/C_testing_HalfSine.csv'
+C_df = load_data(config)
 
-dC_test=dC_df 
-X_test=dC_test[input_cols].values
-y_test=1e12 * dC_test[output_cols].values
+C_test=C_df 
+X_test=C_test[input_cols].values
+y_test=1e15 * C_test[output_cols].values
 
 X_test_rep = np.repeat(X_test, len(output_cols), axis=0)
 X_test_rep = np.column_stack((X_test_rep, np.tile(time, len(X_test_rep) // len(time))))
@@ -95,36 +89,51 @@ y_test_rep = y_test.flatten()
 X_test_scaled = scaler.transform(X_test_rep)
 
 def forward_model(x):
-    x = tf.convert_to_tensor(np.array(x),dtype=tf.float32)
-    output = forward_model_tensorflow(x).numpy().flatten()
+    x2 = tf.convert_to_tensor(np.array(x),dtype=tf.float32)
+    output = forward_model_tensorflow(x2)
     return output
 
+import tensorflow as tf
+
 def forward_model_tensorflow(x):
-    # # Convert input_tensor to a TensorFlow tensor
-    # Define constant values as TensorFlow tensors
-    concatenated_tensor = tf.stack([
-        x[0],
-        x[1],
-        x[2],
-    ])
-    # Reshape and repeat to match your params_rep construction
-    concatenated_tensor = tf.reshape(concatenated_tensor, (1, -1))
+    """Prepares input data and predicts output using a TensorFlow model.
+
+    Args:
+        x (array-like): Input features to the model.
+        output_cols (int): Number of output columns to replicate the data for.
+        time (array-like): Time steps to append to the input features.
+        scaler (MinMaxScaler): Scaler object used for normalizing the data.
+        forward_model (tf.keras.Model): Pre-trained TensorFlow model for prediction.
+
+    Returns:
+        array-like: The predicted output from the TensorFlow model.
+    """
+    # Convert input to a TensorFlow tensor and ensure the correct shape
+    concatenated_tensor = tf.reshape(x, (1, -1))
     concatenated_tensor = tf.tile(concatenated_tensor, (len(output_cols), 1))
-    # Tile the time vector and stack it with params_rep
+
+    # Convert the time vector to a tensor and concatenate it with the input features
     time_tensor = tf.convert_to_tensor(time, dtype=tf.float32)
-    time_tensor = tf.reshape(time_tensor,(len(output_cols),1))
-    params_rep = tf.concat([concatenated_tensor, time_tensor], axis=1)
-    # Use the scaler with TensorFlow operations
-    # Manually scale concatenated_tensor using data_min and data_range from scaler
-    data_min = tf.convert_to_tensor(scaler.data_min_, dtype=tf.float32)
-    data_range = tf.convert_to_tensor(scaler.data_range_, dtype=tf.float32)
-    scaled_concatenated_tensor = (params_rep - data_min) / data_range
-    output = forward_model_tf(scaled_concatenated_tensor)
-    return output
+    time_tensor = tf.reshape(time_tensor, (len(output_cols), 1))
+    input_tensor = tf.concat([concatenated_tensor, time_tensor], axis=1)
+
+    # Scale the concatenated tensor using the scaler's parameters
+    data_mean = tf.convert_to_tensor(scaler.mean_, dtype=tf.float32)
+    data_scale = tf.convert_to_tensor(scaler.scale_, dtype=tf.float32)
+    scaled_input_tensor = (input_tensor - data_mean) / data_scale
+
+    # Use the forward model to predict the output
+    predictions = forward_model_tf(scaled_input_tensor)
+    return predictions.numpy().flatten()
+
+# Example usage
+# You need to define `output_cols`, `time`,
 
 # Define the objective function for least squares
 def objective_function(input_tensor,output):
     predicted_outputs = forward_model(input_tensor)
+    print(predicted_outputs.shape)
+    print(output.shape)
     residuals = predicted_outputs - output
     return residuals
 
@@ -167,16 +176,15 @@ for i in range(X_test.shape[0]):
     print(x_true)
     # tx  = Gaussian(mean=x_true[3],cov=1e-8)
     # etch = Uniform(low=0.3,high=0.5)
-
     y_obs = Gaussian(mean=y_test[i,:], cov=noise*np.eye(len(time))).sample()
 
     # print(y_obs)
     # jac = compute_jacobian(x_true[[0,3,6]])
     # print(jac.shape)
     stringa = "../Chains_dV/Ax"+str(x_true[0])+"_Tx"+str(x_true[1])+"_Etch"+str(x_true[2])
-
     plt.figure()
     plt.plot(time, y_test[i, :], c=real_color, label='Real', linewidth=line_width)
+    plt.plot(time, forward_model(x_true), 'green', label='Pred', linewidth=line_width)
     plt.plot(time, y_obs, '.b', label='Noisy', linewidth=line_width)
     # Set axis labels
     plt.xlabel('Time [ms]')
@@ -193,13 +201,13 @@ for i in range(X_test.shape[0]):
     x0 = np.array([0.5,-0.5,31.0])
     x1 = np.array([0.5,0.5,31.0])
     x2 = np.array([0.1,0.5,29.0])
-    x3 = np.array([0.3,-0.5,30.0])
+    x3 = np.array([0.3,0.0,30.0])
     x4 = np.array([0.1,0.5,31.0])
     x5 = np.array([0.5,1/5,29.0])
 
     # Perform least squares optimization
     result = least_squares(objective_function,
-                           x0,
+                           x3,
                            args=([y_obs]), 
                            bounds=([0.1,
                                     -0.5,
@@ -225,7 +233,7 @@ for i in range(X_test.shape[0]):
     posterior = JointDistribution(x, y)(y=y_obs)
     
     MHsampler = MH(target=posterior,
-                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1e-4,1e-4,1e-4])),
+                   proposal=Gaussian(mean=np.array([0.0,0.0,0.0]).flatten(),cov=np.array([1e-4,1e-4,1e-3])),
                    x0=x0
                 #    proposal=Gaussian(mean=np.array([0.0]).flatten(),cov=np.array([1.0])),
                    )
