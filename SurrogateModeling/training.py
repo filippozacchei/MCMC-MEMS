@@ -1,61 +1,66 @@
 import json
-from model import *
-from dataLoader import *
+import numpy as np
 import tensorflow as tf
-from tensorflow.keras.optimizers import Adam
+from model import NN_Model
+from dataLoader import DataProcessor
+from plotting import plot_predictions
+import logging
 
 # CONFIGURATION FILE
-CONFIGURATION_FILE = './Config_files/config_VoltageSignal.json'
+CONFIGURATION_FILE = './Config_files/config_VoltageSignal_temp.json'
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def train(config_file):
     try:
-        config = parse_config(config_file)    
-        
-        # Data preparation
-        C_df, dC_df = load_data_derivative(config)
-        X_train, X_test, y_train, y_test = split_data(C_df, config)
+        # Load and process data
+        logging.info("\nLoading and processing data.\n")
+        config = DataProcessor.parse_config(config_file)
+        data_processor = DataProcessor(config_file)
+        data_processor.process()
 
-        # Flatten the output and concatenate time column
-        time = np.arange(0, config['TIME_FINAL'], config['TIME_INTERVAL'])
-        X_train_rep, y_train_rep = stack_data(X_train, y_train, time)
-        X_test_rep, y_test_rep = stack_data(X_test, y_test, time)
+        # Build model
+        logging.info("\nBuilding the model.\n")
+        model = NN_Model()
+        model.build_model(data_processor.X_train_scaled.shape[1])
 
-        # Data shuffling and scaling
-        X_train_rep, y_train_rep = shuffle_data(X_train_rep, y_train_rep)
-        X_train_scaled, X_test_scaled, scaler = scale_data(X_train_rep, X_test_rep)  
-
-        # Model building and training
-        model = build_model(X_train_scaled.shape[1],
-                            n_neurons=config['N_NEURONS'],
-                            n_layers=config['N_LAYERS'],
-                            activation_func=config['ACTIVATION'])
-    
-
-        ## TRAIN THE MODEL
         lr = config['LEARNING_RATE']
+        decay_rate=config['DECAY_RATE']
+        
+        # Define learning rate scheduler
+        def learning_rate_schedule(epoch):
+            return lr / (1.0 + epoch * decay_rate)
 
-        # Define learning rate scheduler within main for access to config
-        def learning_rate_schedule(epoch, learning_rate=lr, decay_rate=config['DECAY_RATE']):
-            return lr / (1. + epoch * decay_rate)
+        # Train the model
+        logging.info("\nTraining the model.\n")
+        model.train_model(X=data_processor.X_train_scaled,
+                          y=data_processor.y_train_scaled,
+                          X_val=data_processor.X_test_scaled,
+                          y_val=data_processor.y_test_scaled,
+                          epochs=config['N_EPOCHS'],
+                          lr_schedule=learning_rate_schedule,
+                          verbose=2)
 
-        model.compile(loss='MeanSquaredError', optimizer=Adam(learning_rate=config['LEARNING_RATE']))
+        model.plot_training_history()
 
-        history = model.fit(
-            X_train_scaled, y_train_rep, epochs=config['N_EPOCHS'], batch_size=config['BATCH_SIZE'], verbose=2,
-            validation_data=(X_test_scaled, y_test_rep),
-            callbacks=[tf.keras.callbacks.LearningRateScheduler(learning_rate_schedule)]
-        )
-        plot_training_history(history) 
+        # Plot predictions
+        logging.info("\nPlotting predictions.\n")
+        y_pred = model.predict(data_processor.X_test_scaled).reshape(data_processor.y_test.shape)
+        time = np.arange(0, config['TIME_FINAL'], config['TIME_INTERVAL'])
+        plot_predictions(model, y_pred, data_processor.y_test, time, max_plots=5)
 
         # Save model
-        save_model(model, config['MODEL_PATH'])
+        logging.info("\nSaving the model.\n")
+        model.save_model(config['MODEL_PATH'])
 
         return model
 
     except Exception as e:
-        print(f"An error occurred: {e}")
-        # Optionally, log the error to a file or system log
-
+        logging.error(f"An error occurred: {e}")
+        raise e
 
 if __name__ == '__main__':
+    logging.info("\nChecking GPU availability.\n")
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     train(CONFIGURATION_FILE)

@@ -40,7 +40,7 @@ def plot_train_test(X_train, X_test, feature_labels=None, features_ticks=None, d
     plt.show()
     return 
 
-def plot_predictions(model, y_pred, y_test, time_steps, max_plots=5):
+def plot_predictions(model, y_pred, y_test, X_test, time_steps, max_plots=5):
     """
     Evaluates the model on test data and plots the predictions against the true values.
 
@@ -56,7 +56,7 @@ def plot_predictions(model, y_pred, y_test, time_steps, max_plots=5):
         plt.plot(time_steps, y_test[i, :], label='Actual')
         plt.plot(time_steps, y_pred[i, :], label='Predicted')
         plt.legend()
-        plt.title(f'Test Sample {i+1}')
+        plt.title(f'Overetch:{X_test[i,0]:.2f}um,Offset:{X_test[i,1]:.2f}um,Thickness:{X_test[i,2]:.2f}um')
         plt.show()
 
 def plot_error_heatmap(errors, x_ticks=None, y_ticks=None, x_label='', y_label='', title='Relative Error', cmap='viridis', digits='.2f'):
@@ -83,7 +83,7 @@ def plot_error_heatmap(errors, x_ticks=None, y_ticks=None, x_label='', y_label='
     ax.set_title(title)
     plt.show()
 
-def calculate_error_heatmap(y_pred, y_test, x_ticks, y_ticks):
+def calculate_error_heatmap(y_pred, y_test, x_ticks, y_ticks, ord=np.inf):
     """Calculates and returns a matrix of errors between predictions and actual test values.
     
     Parameters:
@@ -97,8 +97,7 @@ def calculate_error_heatmap(y_pred, y_test, x_ticks, y_ticks):
     """
     errors = np.zeros((len(y_ticks), len(x_ticks)))
     for i, (pred, true) in enumerate(zip(y_pred, y_test)):
-        err = np.linalg.norm(pred - true, ord=1) / np.linalg.norm(true, ord=1)
+        err = np.linalg.norm(pred - true, ord=ord) / np.linalg.norm(true, ord=ord)
         row, col = divmod(i, len(x_ticks))
         errors[row, col] = err
-        print(row,col)
     return errors

@@ -2,27 +2,33 @@ clc
 clear all
 close all
 
-% load C_period_training.mat
-load U_testing_halfSine.mat
-% load V_period_training.mat
+U_input_filename = 'U_testing_halfSine.mat';
+C_output_filename = 'C_testing_HalfSine.csv';
+U_output_filename = 'U_testing_HalfSine.csv';
 
-% Open the Capacity CSV file in append modes
-fileID_C = fopen('C_testing_HalfSine.csv', 'a');
-% Open the U CSV file in append mode
-fileID_U = fopen('U_testing_HalfSine.csv', 'a');
-% Open the V CSV file in append mode
-% fileID_V = fopen('V_period_training.csv', 'a');
+%% Files
 
-fprintf(fileID_C, '%s,%s,%s,%s,%s,%s, \n', "overetch", "offset", "thickness", "ts", "tf", "Values");
-fprintf(fileID_U, '%s,%s,%s,%s,%s,%s, \n', "overetch", "offset", "thickness", "ts", "tf", "Values");
+% Load input
+load(U_input_filename)
+
+% Open the CSV files in append modes
+fileID_C = fopen(C_output_filename, 'a');
+fileID_U = fopen(U_output_filename, 'a');
+
+fprintf(fileID_C, '# %s,%s,%s,%s,%s,%s, \n', "overetch", "offset", "thickness", "ts", "tf", "Values");
+fprintf(fileID_U, '# %s,%s,%s,%s,%s,%s, \n', "overetch", "offset", "thickness", "ts", "tf", "Values");
       
 % Define the capacity function
 capacity = @(x, offset, thickness, overetch) 10 * 8.854e-12 * thickness * 1e-6 * (101 - 2 * overetch) * (1 ./ (1.2 + 2 * overetch - offset - x) ...
     - 1./ (1.2 + 2 * overetch + offset + x));
 
-%%
+%% Generate Files
+
+currentSimulation=1;
+totalSimulations=size(X_dataset,1);
+
 % Generate the capacity values for each parameter combination
-for i = 1:size(X_dataset,1)
+for i = currentSimulation:totalSimulations
     i
     cap = X_dataset{i};
     overetch = cap.Overetch;
