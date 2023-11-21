@@ -32,11 +32,14 @@ def create_forward_model_function(data_processor, nn_model):
     Creates a forward model function using the provided data processor and neural network model.
     """
     def forward_model(x):
+        # Reshape x to match expected input dimensions and repeat it
         x_initial = x.reshape((1, 3))
-        x_repeated = np.repeat(x_initial, len(data_processor.time), axis=0)
-        x_combined = np.column_stack((x_repeated, np.tile(data_processor.time, len(x_repeated) // len(data_processor.time))))
-        x_scaled = data_processor.scaler.transform(x_combined)
-        output = nn_model.predict(x_scaled).flatten()
+        num_time_points = len(data_processor.time)
+        x_repeated = np.tile(x_initial, (num_time_points, 1))
+        # Stack the repeated x values with the time values directly
+        x_combined = np.hstack((x_repeated, data_processor.time.reshape(-1, 1)))
+        # Scale and predict in one step
+        output = nn_model.predict(data_processor.scaler.transform(x_combined)).flatten()
         return output
     return forward_model
 

@@ -17,8 +17,8 @@ TESTING_PATH = 'TESTING_PATH'
 INITIAL_GUESS = np.array([0.3, 0.0, 30.0])
 BOUNDS = ([0.1, -0.5, 29.0], [0.5, 0.5, 31.0])
 NOISE_FACTORS = [0.001, 0.005, 0.01, 0.025, 0.05, 0.1]
-N = int(5e3)
-Nb = int(2.5e3)
+N = int(5e4)
+Nb = int(2.5e4)
 Nt = 5
 REAL_COLOR = 'red'
 SURROGATE_COLOR = 'blue'
@@ -38,6 +38,7 @@ from dataLoader import DataProcessor
 from model import NN_Model
 
 def main():
+    print("Loading model and configuration...")
     nn_model, config = load_model_and_config(CONFIGURATION_FILE)
     data_processor = DataProcessor(CONFIGURATION_FILE)
     data_processor.process()
@@ -57,13 +58,17 @@ def main():
 
     # Main processing loop
     for i in range(1, X_values.shape[0], 100):
+        print(f"Processing sample {i}...")
+        x_true, y_true = X_values[i,:], y_values[i,:]
+        print(x_true)
         for noise_factor in NOISE_FACTORS:
-            x_true, y_true = X_values[i,:], y_values[i,:]
             noise = (noise_factor * np.mean(y_true))**2
             y_observed = Gaussian(mean=y_true, cov=noise * np.eye(len(data_processor.time))).sample()
             
             # Perform least squares optimization
+            print("  Performing least squares optimization...")
             optimized_params, covariance_matrix = least_squares_optimization(y_observed, forward_model, INITIAL_GUESS, BOUNDS)
+            print(optimized_params)
 
             # Define distributions for the Bayesian inference
             x_distribution = Uniform(low=np.array([0.1, -0.5, 29.0]), high=np.array([0.5, 0.5, 31.0]))
@@ -75,8 +80,8 @@ def main():
 
             # Plotting and data collection
             plot_results(data_processor.time, y_true, y_observed, forward_model, samples_mh[0], REAL_COLOR, LINE_WIDTH)
+            samples_mh[0].plot_trace()
             for j in range(3):
-                samples_mh[0].plot_trace()
                 plot_parameter_distribution(samples_mh[0].samples[j, :], x_true[j], ['Overetch', 'Offset', 'Thickness'][j])
 
             # Computing diagnostics and collecting results
@@ -96,6 +101,7 @@ def main():
                             'ci_upper_0': ci[1][0],
                             'ci_upper_1': ci[1][1],
                             'ci_upper_2': ci[1][2]})
+            print(data_list[-1])
 
     # Save and print the data
     data = pd.DataFrame(data_list)
