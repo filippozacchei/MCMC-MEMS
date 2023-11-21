@@ -152,4 +152,4 @@ class NN_Model:
         if X.size == 0:
             raise ValueError("Input array must not be empty")
 
-        return self.model.predict(X)
+        return self.model.predict(X, verbose=0)
