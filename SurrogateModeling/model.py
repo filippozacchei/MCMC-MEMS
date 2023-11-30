@@ -2,10 +2,12 @@ import os
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.optimizers.legacy import Adam
+from tensorflow.keras.layers import Dense, LSTM
+from tensorflow.keras.optimizers import Adam
 from typing import List, Optional, Callable, Tuple
 import numpy as np
+import GPy
+
 
 class NN_Model:
     """
@@ -40,7 +42,7 @@ class NN_Model:
         self.model = load_model(model_path)
 
     def build_model(self, 
-                    input_shape: (int,int), 
+                    input_shape: (int), 
                     n_neurons: List[int] = [64, 64, 64, 64, 64, 64], 
                     activations: List[str] = ['tanh'] * 6,
                     output_neurons: int = 1,
@@ -153,3 +155,30 @@ class NN_Model:
             raise ValueError("Input array must not be empty")
 
         return self.model.predict(X, verbose=0)
+
+class LSTM_Model(NN_Model):
+    def build_model(self, 
+                    input_shape: (int,int), 
+                    n_neurons: List[int] = [64,64,64,64,64,64], 
+                    activations: List[str] = ['tanh']*6,
+                    output_neurons: int = 1,
+                    output_activation: str = 'linear',
+                    lstm_units: int = 64,  # Number of units in LSTM layers
+                    initializer: str = 'glorot_uniform') -> None:
+        """
+        Constructs the neural network model with LSTM layers in the middle.
+        """
+        n_layers = len(n_neurons)
+
+        self.model.add(Dense(n_neurons[0], activation=activations[0], input_shape=input_shape, kernel_initializer=initializer))
+        
+        for neurons, activation in zip(n_neurons[:(n_layers//2)], activations[:(n_layers//2)]):  # Adding the first half of dense layers
+            self.model.add(Dense(neurons, activation=activation, kernel_initializer=initializer))
+
+        self.model.add(LSTM(lstm_units, return_sequences=True, time_major=True))  # First LSTM layer
+
+        # Add remaining dense layers
+        for neurons, activation in zip(n_neurons[(n_layers//2):], activations[(n_layers//2):]):  # Adding the second half of dense layers
+            self.model.add(Dense(neurons, activation=activation, kernel_initializer=initializer))
+
+        self.model.add(Dense(output_neurons, activation=output_activation))

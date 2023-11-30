@@ -54,7 +54,7 @@ def plot_predictions(model, y_pred, y_test, X_test, time_steps, max_plots=5):
     for i in range(min(y_pred.shape[0], max_plots)):
         plt.figure()
         plt.plot(time_steps, y_test[i, :], label='Actual')
-        plt.plot(time_steps, y_pred[i, :], label='Predicted')
+        plt.scatter(time_steps, y_pred[i, :], label='Predicted')
         plt.legend()
         plt.title(f'Overetch:{X_test[i,0]:.2f}um,Offset:{X_test[i,1]:.2f}um,Thickness:{X_test[i,2]:.2f}um')
         plt.show()

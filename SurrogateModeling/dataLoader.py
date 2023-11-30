@@ -242,3 +242,74 @@ class DataProcessor:
         X_scaled = self.scaler.transform(X_rep)
         y_scaled = y_rep
         return X_scaled, y_scaled
+
+
+class LSTMDataProcessor(DataProcessor):
+    def __init__(self, config_path):
+        super().__init__(config_path)
+
+    @staticmethod
+    def VoltageProfile(t, amplitude_val=1.8, Tx_val=0.4e-3):
+        return 0.5 * amplitude_val * (1 + np.sin((t / Tx_val - 1 / 4) * 2 * np.pi)) * (t < 2 * Tx_val)
+
+    @staticmethod
+    def stack_data(X, y, time):
+        """
+        Reshapes data into sequences for LSTM training, including the VoltageProfile feature.
+
+        Parameters:
+        - X: The input features, expected shape [n_samples, n_features].
+        - y: The output features, expected shape [n_samples, output_features].
+        - time_steps: The number of time steps to be used in each sequence.
+
+        Returns:
+        - Two numpy arrays: X_seq and y_seq, reshaped for LSTM.
+        """
+        n_samples, n_features = X.shape
+        X_seq = np.zeros((n_samples, len(time), n_features + 2))
+        y_seq = np.zeros((n_samples, len(time), 1))
+
+        for i in range(n_samples):
+            for t in range(len(time)):
+                X_seq[i, t, :-2] = X[i]
+                X_seq[i, t, -2] = time[t]
+                X_seq[i, t, -1] = LSTMDataProcessor.VoltageProfile(time[t])  # Assuming each time step is 1e-5
+                y_seq[i, t, :] = y[i,t]
+        return X_seq, y_seq
+
+
+    def scale_data(self, scaling_strategy=None):
+        """
+        Scales 3D LSTM data and then reshapes it back to 3D.
+
+        Parameters:
+        - X: 3D data array of shape [n_samples, n_timesteps, n_features]
+        - scaler: An instance of a scaler, e.g., StandardScaler or MinMaxScaler
+        - n_timesteps: Number of timesteps in each sequence
+
+        Returns:
+        - Scaled and reshaped data
+        """
+
+        self.X_train, self.y_train = self.shuffle_data(self.X_train, self.y_train)
+        X_train_rep, y_train_rep = self.stack_data(self.X_train, self.y_train, self.time)
+        X_test_rep, y_test_rep = self.stack_data(self.X_test, self.y_test, self.time)
+
+        n_samples, n_timeSteps, n_features = X_train_rep.shape
+        n_samples_test = X_test_rep.shape[0]
+        
+        # Flatten to 2D
+        X_train_rep = X_train_rep.reshape(-1, n_features)
+        X_test_rep = X_test_rep.reshape(-1, n_features)
+        y_train_rep = y_train_rep
+        y_test_rep = y_test_rep
+          
+        if scaling_strategy is None or scaling_strategy == 'standard':
+            self.scaler = StandardScaler()
+        elif scaling_strategy == 'minmax':
+            self.scaler = MinMaxScaler()
+         
+        self.X_train_scaled = self.scaler.fit_transform(X_train_rep).reshape(n_samples, n_timeSteps, n_features)
+        self.X_test_scaled = self.scaler.transform(X_test_rep).reshape(n_samples_test, n_timeSteps, n_features)
+        self.y_train_scaled =  y_train_rep
+        self.y_test_scaled =  y_test_rep
