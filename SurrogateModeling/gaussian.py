@@ -52,6 +52,8 @@ model = GPy.models.SparseGPRegression(data_processor.X_train_scaled,
 display(model)
 display(model.rbf.lengthscale)
 
+# model.save_model('./file')
+
 y_pred, y_var = model.predict_noiseless(data_processor.X_train_scaled[0:1500,:],full_cov=False)
 y_pred=y_pred.reshape(data_processor.y_train[0:10].shape)
 y_var=y_var.reshape(data_processor.y_train[0:10].shape)

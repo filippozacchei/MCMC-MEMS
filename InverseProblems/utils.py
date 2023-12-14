@@ -54,7 +54,9 @@ def setup_markov_chain_sampler(posterior_distribution, noise_level, start_point)
     """
     Sets up a Markov Chain Monte Carlo sampler with the given parameters.
     """
-    proposal_distribution = Gaussian(mean=np.zeros(3), cov=np.array([noise_level * 1e-4, noise_level * 1e-4, noise_level * 1e-2]))
+    proposal_distribution = Gaussian(mean=np.zeros(3), cov=np.array([noise_level*0.16*1e-4,
+                                                                     noise_level*1.0*1e-4,
+                                                                     noise_level*4*1e-4]))
     return MH(target=posterior_distribution, proposal=proposal_distribution, x0=start_point)
 
 def objective_function(input, exact_outputs, forward_model):
@@ -73,7 +75,7 @@ def plot_results(time, y_true, y_obs, forward_model, samplesMH, REAL_COLOR, LINE
     plt.plot(time, y_obs, '.b', label='Noisy', linewidth=LINE_WIDTH)
     plt.xlabel('Time [ms]')
     plt.ylabel(r'$\Delta C$ [fF/s]')
-    plt.title(f'Overetch = {samplesMH.mean()[0]}μm; Offset = {samplesMH.mean()[1]:.2f}μm; Thickness = {samplesMH.mean()[2]:.2f}μm', fontsize=10)
+    plt.title(f'Overetch = {samplesMH.mean()[0]:.4f}μm; Offset = {samplesMH.mean()[1]:.4f}μm; Thickness = {samplesMH.mean()[2]:.4f}μm', fontsize=10)
     plt.legend(loc='upper right', fontsize=10)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.show()

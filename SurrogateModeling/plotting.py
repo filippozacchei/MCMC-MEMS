@@ -52,11 +52,14 @@ def plot_predictions(model, y_pred, y_test, X_test, time_steps, max_plots=5):
     - max_plots (int): The maximum number of plots to display.
     """
     for i in range(min(y_pred.shape[0], max_plots)):
-        plt.figure()
-        plt.plot(time_steps, y_test[i, :], label='Actual')
-        plt.scatter(time_steps, y_pred[i, :], label='Predicted')
-        plt.legend()
-        plt.title(f'Overetch:{X_test[i,0]:.2f}um,Offset:{X_test[i,1]:.2f}um,Thickness:{X_test[i,2]:.2f}um')
+        plt.figure(figsize=(8, 6))  # Adjust the figure size as needed
+        plt.plot(time_steps, y_test[i, :], 'b-', label='Data', linewidth=2)
+        plt.scatter(time_steps, y_pred[i, :], color='r', label='Prediction', edgecolors='w', s=50)  # Red scatter with white edge
+        plt.xlabel('Time (s)', fontsize=14)
+        plt.ylabel(f'$\Delta$C [fF]', fontsize=14)
+        plt.legend(fontsize=12)
+        plt.title(f'Overetch: {X_test[i,0]:.2f}um, Offset: {X_test[i,1]:.2f}um, Thickness: {X_test[i,2]:.2f}um', fontsize=16)
+        plt.grid(True)
         plt.show()
 
 def plot_error_heatmap(errors, x_ticks=None, y_ticks=None, x_label='', y_label='', title='Relative Error', cmap='viridis', digits='.2f'):

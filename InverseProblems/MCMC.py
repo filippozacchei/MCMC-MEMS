@@ -12,11 +12,12 @@ from cuqi.geometry import Continuous1D, Discrete
 from utils import *
 
 # Constants
-CONFIGURATION_FILE = '../SurrogateModeling/Config_files/config_VoltageSignal_temp.json'
-TESTING_PATH = 'TESTING_PATH'
+CONFIGURATION_FILE = '../SurrogateModeling/Config_files/config_VoltageSignal.json'
 INITIAL_GUESS = np.array([0.3, 0.0, 30.0])
 BOUNDS = ([0.1, -0.5, 29.0], [0.5, 0.5, 31.0])
-NOISE_FACTORS = [0.001, 0.005, 0.01, 0.025, 0.05, 0.1]
+NOISE_FACTORS = 1e-6*np.array([10, 100, 1000, 10000])
+B = np.sqrt(20000)
+S = 5
 N = int(6e5)
 Nb = int(1e5)
 Nt = 5
@@ -24,11 +25,11 @@ REAL_COLOR = 'red'
 SURROGATE_COLOR = 'blue'
 LINE_WIDTH = 1.5
 OUTPUT_FILENAME = 'noise.csv'
-PARAMETER_START_POINTS = [np.array([0.3, 0.0, 30.0]),  
-                          np.array([0.4,0.25,30.0]), 
-                          np.array([0.2,0.25,30.0]), 
-                          np.array([0.4,-0.25,30.0]),
-                          np.array([0.2,-0.25,30.0])]
+PARAMETER_START_POINTS = [np.array([0.3, 0.0, 30.0])]  
+                        #   np.array([0.4,0.25,30.0]), 
+                        #   np.array([0.2,0.25,30.0]), 
+                        #   np.array([0.4,-0.25,30.0]),
+                        #   np.array([0.2,-0.25,30.0])]
 
 # Adjust system path for local module imports
 sys.path.append('../DATA/')
@@ -42,27 +43,24 @@ def main():
     nn_model, config = load_model_and_config(CONFIGURATION_FILE)
     data_processor = DataProcessor(CONFIGURATION_FILE)
     data_processor.process()
+    print(data_processor.X_test)
     forward_model = create_forward_model_function(data_processor, nn_model)
 
     # Create a CUQI model based on the forward model function
     cuqi_model = Model(forward=forward_model, range_geometry=Continuous1D(len(data_processor.time)), domain_geometry=Discrete(["Overetch", "Offset", "Thickness"]))
 
-    # Load and process test data
-    test_processor = DataProcessor(CONFIGURATION_FILE)
-    test_processor.load_data(file_name=TESTING_PATH)
-    output_columns = test_processor.df.columns[5:-1]
-    X_values, y_values = test_processor.df[config['INPUT_COLS']].values, config['Y_SCALING_FACTOR'] * (test_processor.df[output_columns].values)
+    X_values, y_values = data_processor.X_test, data_processor.y_test
 
     # List for storing results
     data_list = []
 
     # Main processing loop
-    for i in range(1, X_values.shape[0], 100):
+    for i in range(1,X_values.shape[0],10):
         print(f"Processing sample {i}...")
         x_true, y_true = X_values[i,:], y_values[i,:]
         print(x_true)
         for noise_factor in NOISE_FACTORS:
-            noise = (noise_factor * np.mean(y_true))**2
+            noise = (noise_factor*B*S)**2
             y_observed = Gaussian(mean=y_true, cov=noise * np.eye(len(data_processor.time))).sample()
             
             # Perform least squares optimization
@@ -77,7 +75,10 @@ def main():
 
             # Perform sampling using MH
             samples_mh = [setup_markov_chain_sampler(posterior, noise, start_point).sample_adapt(N, 0).burnthin(Nb, Nt) for start_point in PARAMETER_START_POINTS]
+            samples_array = np.array([samples_mh[i].samples for i in range(len(PARAMETER_START_POINTS))])
 
+            # Save the numpy array to a file
+            np.save('./samples.npy', samples_array)  
             # Plotting and data collection
             plot_results(data_processor.time, y_true, y_observed, forward_model, samples_mh[0], REAL_COLOR, LINE_WIDTH)
             samples_mh[0].plot_trace()

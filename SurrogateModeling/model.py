@@ -4,9 +4,9 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, LSTM
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.regularizers import l2
 from typing import List, Optional, Callable, Tuple
 import numpy as np
-import GPy
 
 
 class NN_Model:
@@ -44,7 +44,7 @@ class NN_Model:
     def build_model(self, 
                     input_shape: (int), 
                     n_neurons: List[int] = [64, 64, 64, 64, 64, 64], 
-                    activations: List[str] = ['tanh'] * 6,
+                    activation: str = 'tanh',
                     output_neurons: int = 1,
                     output_activation: str = 'linear',
                     initializer: str = 'glorot_uniform') -> None:
@@ -60,13 +60,10 @@ class NN_Model:
 
         :raises ValueError: If the length of `n_neurons` and `activations` lists do not match.
         """
-        if len(n_neurons) != len(activations):
-            raise ValueError("Length of n_neurons must match length of activations")
 
-
-        self.model.add(Dense(n_neurons[0], activation=activations[0], input_shape=(input_shape,), kernel_initializer=initializer))
-        for neurons, activation in zip(n_neurons[1:], activations[1:]):
-            self.model.add(Dense(neurons, activation=activation, kernel_initializer=initializer))
+        self.model.add(Dense(n_neurons[0], activation=activation, input_shape=(input_shape,), kernel_initializer=initializer, kernel_regularizer=l2(1e-12)))
+        for neurons in n_neurons[1:]:
+            self.model.add(Dense(neurons, activation=activation, kernel_initializer=initializer, kernel_regularizer=l2(1e-12)))
         self.model.add(Dense(output_neurons, activation=output_activation))
 
     def train_model(self, 
@@ -78,7 +75,7 @@ class NN_Model:
                     epochs: int = 10000, 
                     batch_size: int = 15000, 
                     loss: str = 'MeanSquaredError', 
-                    validation_freq: int = 10, 
+                    validation_freq: int = 100, 
                     verbose: int = 0,
                     lr_schedule: Optional[Callable[[int], float]] = None) -> None:
         """
@@ -116,22 +113,26 @@ class NN_Model:
         """
         Plots the training and validation loss over epochs.
 
+        Parameters:
+        - save_path: Optional; file path to save the plot.
+
         This method should be called after training the model using `train_model`.
         """
         if self.history is None:
             raise ValueError("The model has no training history. Train the model using 'train_model' method first.")
 
-        plt.figure()
+        plt.figure(figsize=(8, 6))  # Adjust the figure size as needed
         tot_train = len(self.history.history['loss'])
         tot_valid = len(self.history.history['val_loss']) 
-        valid_freq = int(tot_train/tot_valid)
-        plt.plot(np.arange(tot_train),self.history.history['loss'], 'b', label='Training loss')
-        plt.plot(valid_freq*np.arange(tot_valid),self.history.history['val_loss'], 'r', label='Validation loss')
+        valid_freq = int(tot_train / tot_valid)
+        plt.plot(np.arange(tot_train), self.history.history['loss'], 'b-', label='Training loss', linewidth=2)
+        plt.plot(valid_freq * np.arange(tot_valid), self.history.history['val_loss'], 'r--', label='Validation loss', linewidth=2)
         plt.yscale('log')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt.title('Training and Validation Loss')
+        plt.xlabel('Epochs', fontsize=14)
+        plt.ylabel('Loss', fontsize=14)
+        plt.legend(fontsize=12)
+        plt.title('Training and Validation Loss', fontsize=16)
+        plt.grid(True)
         plt.show()
 
     def save_model(self, model_path: str) -> None:

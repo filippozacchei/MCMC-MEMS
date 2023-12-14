@@ -3,7 +3,7 @@ clc
 clear all
 close all
 
-load Capacity.mat
+load U_testing_halfSine.mat
 
 %%
 g = 9.81;

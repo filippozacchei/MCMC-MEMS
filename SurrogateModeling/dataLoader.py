@@ -136,27 +136,29 @@ class DataProcessor:
 
         try:
             input_cols = self.config['INPUT_COLS']
+            # self.df.columns = input_cols + ['sensitivity']
             
-            # Extracting time step information directly into variables
-            time_step = self.df.iloc[0, len(input_cols)]
-            time_final = self.df.iloc[0, len(input_cols) + 1]
-            num_time_steps = int(time_final/time_step) + 1
+            if self.config['CONFIGURATION'] == "I":
+                # Extracting time step information directly into variables
+                time_step = self.df.iloc[0, len(input_cols)]
+                time_final = self.df.iloc[0, len(input_cols) + 1]
+                num_time_steps = int(time_final/time_step) + 1
 
-            self.time = np.arange(0,time_final,time_step)
+                self.time = np.arange(0,time_final,time_step)
 
-            # Generating time column names in a compact manner
-            time_columns = [f"Time={1e3 * time_step * i:.2f}ms" for i in range(num_time_steps)]
-            column_labels = input_cols + ['ts', 'tf'] + time_columns
+                # Generating time column names in a compact manner
+                time_columns = [f"Time={1e3 * time_step * i:.2f}ms" for i in range(num_time_steps)]
+                column_labels = input_cols + ['ts', 'tf'] + time_columns
 
-            # Check for column count mismatch
-            if len(self.df.columns) != len(column_labels):
-                raise ColumnMismatchError(f"The number of columns in the data file does not match the expected count. Expected {len(column_labels)} columns as per configuration, but found {len(df.columns)} columns in the file. Please check the data file and the 'INPUT_COLS' configuration.")      
-            self.df.columns = column_labels    
+                # Check for column count mismatch
+                if len(self.df.columns) != len(column_labels):
+                    raise ColumnMismatchError(f"The number of columns in the data file does not match the expected count. Expected {len(column_labels)} columns as per configuration, but found {len(df.columns)} columns in the file. Please check the data file and the 'INPUT_COLS' configuration.")      
+                self.df.columns = column_labels    
 
-            self.d_df = self.df.copy()
-            self.d_df.loc[:, self.config['TIME_COL_START']:self.config['TIME_COL_END']] = (
-                self.df.loc[:, self.config['TIME_COL_SECOND']:self.config['TIME_COL_SECOND_END']].values -
-                self.df.loc[:, self.config['TIME_COL_START']:self.config['TIME_COL_END']].values) / self.df.at[0, 'ts']
+                self.d_df = self.df.copy()
+                self.d_df.loc[:, self.config['TIME_COL_START']:self.config['TIME_COL_END']] = (
+                    self.df.loc[:, self.config['TIME_COL_SECOND']:self.config['TIME_COL_SECOND_END']].values -
+                    self.df.loc[:, self.config['TIME_COL_START']:self.config['TIME_COL_END']].values) / self.df.at[0, 'ts']
         except KeyError as e:
             raise KeyError(f"A required column key is missing either in the CSV file or in the configuration. Missing key: '{e}'. Please ensure all necessary columns are defined in both the CSV and the configuration.")
 
@@ -179,7 +181,7 @@ class DataProcessor:
     def stack_data(X, y, time):
         """
         Prepares time series data by repeating X for each time step and appending the time to each feature set.
-
+ 
         Parameters:
         - X: The input features.
         - y: The output features.
@@ -224,23 +226,33 @@ class DataProcessor:
             self.scaler = MinMaxScaler()
          
         self.X_train, self.y_train = self.shuffle_data(self.X_train, self.y_train)
-        X_train_rep, y_train_rep = self.stack_data(self.X_train, self.y_train, self.time)
-        X_test_rep, y_test_rep = self.stack_data(self.X_test, self.y_test, self.time)
-        self.X_train_scaled = self.scaler.fit_transform(X_train_rep)
-        self.X_test_scaled = self.scaler.transform(X_test_rep)
-        self.y_train_scaled = y_train_rep
-        self.y_test_scaled = y_test_rep
+        if self.time is not None:
+            X_train_rep, y_train_rep = self.stack_data(self.X_train, self.y_train, self.time)
+            X_test_rep, y_test_rep = self.stack_data(self.X_test, self.y_test, self.time)
+            self.X_train_scaled = self.scaler.fit_transform(X_train_rep)
+            self.X_test_scaled = self.scaler.transform(X_test_rep)
+            self.y_train_scaled = y_train_rep
+            self.y_test_scaled = y_test_rep
+        else:
+            self.X_train_scaled = self.scaler.fit_transform(self.X_train)
+            self.X_test_scaled = self.scaler.transform(self.X_test)
+            self.y_train_scaled = self.y_train.reshape(self.X_train.shape[0],1)
+            self.y_test_scaled = self.y_test.reshape(self.X_test.shape[0],1) 
     
-    def scale_new_data(self, X, y):
+    def scale_new_data(self, X, y=None):
         """
         Scales new data.
 
         Returns:
         - Scaled training and testing features, and the scaler.
         """
-        X_rep, y_rep = self.stack_data(X, y, self.time)
-        X_scaled = self.scaler.transform(X_rep)
-        y_scaled = y_rep
+        if self.time is not None:
+            X_rep, y_rep = self.stack_data(X, y, self.time)
+            X_scaled = self.scaler.transform(X_rep)
+            y_scaled = y_rep
+        else:
+            X_scaled = self.scaler.transform(X)
+            y_scaled = None
         return X_scaled, y_scaled
 
 
