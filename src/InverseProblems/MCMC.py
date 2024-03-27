@@ -113,21 +113,6 @@ def main():
 
             # Computing diagnostics and collecting results
             # print("Rhat: ", samples_array[0].compute_rhat(samples_array[1:]))
-            ci = samples_mh[0].compute_ci()
-            mean = samples_mh[0].mean()
-            data_list.append({'x_true_0': x_true[0],
-                              'x_true_1': x_true[1], 
-                              'x_true_2': x_true[2],
-                              'noise': noise_factor, 
-                              'mean_0': mean[0],
-                              'mean_1': mean[1],
-                              'mean_2': mean[2], 
-                              'ci_lower_0': ci[0][0],
-                              'ci_lower_1': ci[0][1],
-                              'ci_lower_2': ci[0][2],
-                              'ci_upper_0': ci[1][0],
-                              'ci_upper_1': ci[1][1],
-                              'ci_upper_2': ci[1][2]})
 
 if __name__ == "__main__":
     main()

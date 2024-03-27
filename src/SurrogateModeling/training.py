@@ -7,18 +7,17 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 # Custom module imports
-sys.path.append('../../src/SurrogateModeling')
-sys.path.append('../../src/utils')
-sys.path.append('../../data')
+sys.path.append('../utils')
 
 from model import NN_Model
 from preprocessing import preprocessing
 
-# If this file is launched from terminal
-CONFIGURATION_FILE = './config_II.json'
 
-# Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+def check_gpu_availability():
+    """Logs the number of available GPUs."""
+    logging.info("Checking GPU availability.")
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+    
 
 def train(config_file):
     """
@@ -43,6 +42,9 @@ def train(config_file):
     """
     
     check_gpu_availability()
+
+    # Set up logging
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     try:
         # Load and process data
@@ -71,8 +73,8 @@ def train(config_file):
                           epochs=config['N_EPOCHS'],
                           batch_size=config['BATCH_SIZE'],
                           lr_schedule=learning_rate_schedule,
-                          validation_freq=10,
-                          verbose=1,
+                          validation_freq=100,
+                          verbose=2,
                           plot_loss=True)
         
         # Save, load, and plot model
@@ -84,11 +86,4 @@ def train(config_file):
         logging.error(f"An error occurred: {e}")
         raise
 
-def check_gpu_availability():
-    """Logs the number of available GPUs."""
-    logging.info("Checking GPU availability.")
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
-if __name__ == '__main__':
-    
-    train(CONFIGURATION_FILE)
