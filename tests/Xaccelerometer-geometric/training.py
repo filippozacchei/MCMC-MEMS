@@ -73,7 +73,7 @@ def train(config_file):
                           lr_schedule=learning_rate_schedule,
                           validation_freq=10,
                           verbose=1,
-                          plot_loss=False)
+                          plot_loss=True)
         
         # Save, load, and plot model
         logging.info("Saving and reloading the model for inference.")
