@@ -1,0 +1,74 @@
+/* Custom CSS for Sphinx Documentation */
+
+/* Customize the font and background color */
+body {
+    font-family: 'Courier New', Courier, monospace sans-serif;
+    background-color: #008; /* Change to your preferred background color */
+}
+
+/* Customize the header */
+.header {
+    background-color: #007acc; /* Change to your preferred header background color */
+    color: #ffffff; /* Change to your preferred header text color */
+    padding: 10px;
+}
+
+/* Customize the main content area */
+.container {
+    padding: 20px;
+}
+
+/* Customize headings and text */
+h1, h2, h3, h4, h5, h6 {
+    color: #007acc; /* Change to your preferred heading text color */
+}
+
+p {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Customize code blocks */
+code, pre {
+    font-family: Monaco, monospace;
+    background-color: #f7f7f7; /* Change to your preferred code block background color */
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 5px;
+}
+
+/* Customize links */
+a {
+    color: #007acc; /* Change to your preferred link color */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Customize lists */
+ul, ol {
+    margin-left: 20px;
+}
+
+/* Customize images */
+img {
+    max-width: 100%;
+}
+
+/* Customize tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2; /* Change to your preferred table header background color */
+}

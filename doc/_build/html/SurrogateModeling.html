@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>SurrogateModeling package &#8212; MCMC-MEMS 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <link rel="stylesheet" type="text/css" href="_static/_static/sphinx_rtd_theme.css" />
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="MCMC-MEMS" href="modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="surrogatemodeling-package">
+<h1>SurrogateModeling package<a class="headerlink" href="#surrogatemodeling-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-SurrogateModeling.dataLoader">
+<span id="surrogatemodeling-dataloader-module"></span><h2>SurrogateModeling.dataLoader module<a class="headerlink" href="#module-SurrogateModeling.dataLoader" title="Link to this heading">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.ColumnMismatchError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SurrogateModeling.dataLoader.</span></span><span class="sig-name descname"><span class="pre">ColumnMismatchError</span></span><a class="headerlink" href="#SurrogateModeling.dataLoader.ColumnMismatchError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#SurrogateModeling.dataLoader.DataLoadingError" title="SurrogateModeling.dataLoader.DataLoadingError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoadingError</span></code></a></p>
+<p>Exception for mismatch in the expected and actual number of DataFrame columns.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.ConfigurationError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SurrogateModeling.dataLoader.</span></span><span class="sig-name descname"><span class="pre">ConfigurationError</span></span><a class="headerlink" href="#SurrogateModeling.dataLoader.ConfigurationError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#SurrogateModeling.dataLoader.DataLoadingError" title="SurrogateModeling.dataLoader.DataLoadingError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoadingError</span></code></a></p>
+<p>Exception for issues in the configuration.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataLoadingError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SurrogateModeling.dataLoader.</span></span><span class="sig-name descname"><span class="pre">DataLoadingError</span></span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataLoadingError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Base class for exceptions in this module.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SurrogateModeling.dataLoader.</span></span><span class="sig-name descname"><span class="pre">DataProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to handle data Processing.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor.load_data" title="Link to this definition">¶</a></dt>
+<dd><p>Loads and processes data from a CSV file specified in the configuration.
+s
+This method reads a CSV file using a file path from the class configuration, processes it based on predefined rules, and stores the result in class attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#SurrogateModeling.dataLoader.FileNotFoundError" title="SurrogateModeling.dataLoader.FileNotFoundError"><strong>FileNotFoundError</strong></a> – If the CSV file cannot be found at the path provided in the configuration.</p></li>
+<li><p><a class="reference internal" href="#SurrogateModeling.dataLoader.ColumnMismatchError" title="SurrogateModeling.dataLoader.ColumnMismatchError"><strong>ColumnMismatchError</strong></a> – If the actual and expected column counts do not match.</p></li>
+<li><p><strong>KeyError</strong> – If a required configuration key is missing.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor.parse_config">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor.parse_config" title="Link to this definition">¶</a></dt>
+<dd><p>Parses and validates a JSON configuration file.</p>
+<p>Reads a JSON configuration file and ensures all required keys are present. Returns a dictionary with the configuration parameters, suitable for use in specific processes or applications.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_path</strong> – (str) Path to the JSON configuration file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(dict) Configuration parameters.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#SurrogateModeling.dataLoader.FileNotFoundError" title="SurrogateModeling.dataLoader.FileNotFoundError"><strong>FileNotFoundError</strong></a> – If the configuration file is not found at <cite>config_path</cite>.</p></li>
+<li><p><strong>ValueError</strong> – If required keys are missing in the configuration file. Lists missing keys.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Examples<span class="colon">:</span></dt>
+<dd class="field-even"><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">parse_config</span><span class="p">(</span><span class="s1">&#39;path/to/config.json&#39;</span><span class="p">)</span>
+<span class="go">{&#39;DATASET_PATH&#39;: &#39;data/&#39;, &#39;INPUT_COLS&#39;: [&#39;col1&#39;, &#39;col2&#39;], ...}</span>
+</pre></div>
+</div>
+</dd>
+<dt class="field-odd">Notes<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Required keys in the configuration file:
+- ‘DATASET_PATH’
+- ‘INPUT_COLS’
+- ‘Y_SCALING_FACTOR’
+- ‘TEST_SIZE’
+- ‘RANDOM_STATE’
+- ‘MIN_OVERETCH’
+- ‘MAX_OVERETCH’
+- ‘MIN_OFFSET’
+- ‘MAX_OFFSET’
+- ‘MIN_THICKNESS’
+- ‘MAX_THICKNESS’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor.process" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor.scale_data">
+<span class="sig-name descname"><span class="pre">scale_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scaling_strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor.scale_data" title="Link to this definition">¶</a></dt>
+<dd><p>Scales the training and testing data.</p>
+<p>It updates the values of :attribute X_train_scaled</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scaling_strategy</strong> – Optional; specifies the scaling strategy (‘standard’ for StandardScaler, ‘minmax’ for MinMaxScaler). Defaults to ‘standard’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor.scale_new_data">
+<span class="sig-name descname"><span class="pre">scale_new_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor.scale_new_data" title="Link to this definition">¶</a></dt>
+<dd><p>Scales new data using the same scaler as the training data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> – Input features to be scaled.</p></li>
+<li><p><strong>y</strong> – Optional; output features to be scaled. If provided, it will be processed similarly to X.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return X_scaled<span class="colon">:</span></dt>
+<dd class="field-even"><p>Scaled input features.</p>
+</dd>
+<dt class="field-odd">Return y_scaled<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Scaled output features, if y is provided; otherwise, None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor.select_scaler">
+<span class="sig-name descname"><span class="pre">select_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scaling_strategy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor.select_scaler" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor.shuffle_data">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shuffle_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor.shuffle_data" title="Link to this definition">¶</a></dt>
+<dd><p>Randomly shuffles the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> – Input features.</p></li>
+<li><p><strong>y</strong> – Output labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Shuffled input features and corresponding labels.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor.split_data">
+<span class="sig-name descname"><span class="pre">split_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor.split_data" title="Link to this definition">¶</a></dt>
+<dd><p>Splits the dataset into training and test sets based on the configuration.</p>
+<p>This method uses class attributes for the dataset and configuration. It assumes that ‘INPUT_COLS’ and ‘TEST_SIZE’ are defined in the configuration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.DataProcessor.stack_data">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stack_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.dataLoader.DataProcessor.stack_data" title="Link to this definition">¶</a></dt>
+<dd><p>Prepares time series data by expanding the input features (X) and flattening the output features (y).</p>
+<p>This method repeats each row of X for the number of time steps, and appends the corresponding time step to each repeated row. The output array y is flattened.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> – (numpy array) the input features with shape (n_samples, n_features).</p></li>
+<li><p><strong>y</strong> – (numpy array) the output features with shape (n_samples, n_time_steps).</p></li>
+<li><p><strong>time</strong> – (numpy array) the time steps with length equal to n_time_steps.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return X_rep<span class="colon">:</span></dt>
+<dd class="field-even"><p>(numpy array) expanded X with time steps appended.</p>
+</dd>
+<dt class="field-odd">Return y_rep<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(numpy array) flattened y.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="SurrogateModeling.dataLoader.FileNotFoundError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SurrogateModeling.dataLoader.</span></span><span class="sig-name descname"><span class="pre">FileNotFoundError</span></span><a class="headerlink" href="#SurrogateModeling.dataLoader.FileNotFoundError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#SurrogateModeling.dataLoader.DataLoadingError" title="SurrogateModeling.dataLoader.DataLoadingError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoadingError</span></code></a></p>
+<p>Exception for when a file is not found.</p>
+</dd></dl>
+
+</section>
+<section id="module-SurrogateModeling.model">
+<span id="surrogatemodeling-model-module"></span><h2>SurrogateModeling.model module<a class="headerlink" href="#module-SurrogateModeling.model" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="SurrogateModeling.model.NN_Model">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SurrogateModeling.model.</span></span><span class="sig-name descname"><span class="pre">NN_Model</span></span><a class="headerlink" href="#SurrogateModeling.model.NN_Model" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to build, train, and manage a neural network model using TensorFlow and Keras.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>model (Sequential): The neural network model.
+history: The history object returned by the Keras fit method containing training information.</p>
+</dd>
+<dt>Methods:</dt><dd><p>load_model: Loads a saved Keras model.
+build_model: Constructs the neural network model.
+train_model: Trains the model on the provided dataset.
+plot_training_history: Plots the training and validation loss.
+save_model: Saves the current state of the model.
+predict: Makes predictions using the trained model.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.model.NN_Model.build_model">
+<span class="sig-name descname"><span class="pre">build_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neurons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[64,</span> <span class="pre">64,</span> <span class="pre">64,</span> <span class="pre">64,</span> <span class="pre">64,</span> <span class="pre">64,</span> <span class="pre">64,</span> <span class="pre">64]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tanh'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_neurons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_activation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initializer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'glorot_uniform'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#SurrogateModeling.model.NN_Model.build_model" title="Link to this definition">¶</a></dt>
+<dd><p>Constructs the neural network model layer by layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_shape</strong> – The shape of the input layer.</p></li>
+<li><p><strong>n_neurons</strong> – A list containing the number of neurons for each layer.</p></li>
+<li><p><strong>activations</strong> – A list of activation functions for each layer.</p></li>
+<li><p><strong>output_neurons</strong> – The number of neurons in the output layer.</p></li>
+<li><p><strong>output_activation</strong> – The activation function for the output layer.</p></li>
+<li><p><strong>initializer</strong> – The initializer for the layer weights.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the length of <cite>n_neurons</cite> and <cite>activations</cite> lists do not match.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.model.NN_Model.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#SurrogateModeling.model.NN_Model.load_model" title="Link to this definition">¶</a></dt>
+<dd><p>Loads a model saved at the specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_path</strong> – The file path to the saved Keras model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.model.NN_Model.plot_training_history">
+<span class="sig-name descname"><span class="pre">plot_training_history</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#SurrogateModeling.model.NN_Model.plot_training_history" title="Link to this definition">¶</a></dt>
+<dd><p>Plots the training and validation loss over epochs.</p>
+<p>Parameters:
+- save_path: Optional; file path to save the plot.</p>
+<p>This method should be called after training the model using <cite>train_model</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.model.NN_Model.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#SurrogateModeling.model.NN_Model.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Makes predictions using the trained model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> – Input data for making predictions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The predicted values.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the input array is empty.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.model.NN_Model.save_model">
+<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#SurrogateModeling.model.NN_Model.save_model" title="Link to this definition">¶</a></dt>
+<dd><p>Saves the current state of the model to a specified file path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_path</strong> – The file path where the model should be saved.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="SurrogateModeling.model.NN_Model.train_model">
+<span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean_squared_error'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_schedule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#SurrogateModeling.model.NN_Model.train_model" title="Link to this definition">¶</a></dt>
+<dd><p>Trains the model on the provided dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> – Input data for training.</p></li>
+<li><p><strong>y</strong> – Target data for training.</p></li>
+<li><p><strong>X_val</strong> – Input data for validation.</p></li>
+<li><p><strong>y_val</strong> – Target data for validation.</p></li>
+<li><p><strong>learning_rate</strong> – Initial learning rate for training.</p></li>
+<li><p><strong>epochs</strong> – Number of epochs to train the model.</p></li>
+<li><p><strong>batch_size</strong> – Number of samples per batch of computation.</p></li>
+<li><p><strong>loss</strong> – Loss function to be used during training.</p></li>
+<li><p><strong>validation_freq</strong> – Frequency (number of epochs) at which to evaluate the validation data.</p></li>
+<li><p><strong>lr_schedule</strong> – Optional learning rate schedule function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If any input arrays are empty.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-SurrogateModeling.plotting">
+<span id="surrogatemodeling-plotting-module"></span><h2>SurrogateModeling.plotting module<a class="headerlink" href="#module-SurrogateModeling.plotting" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="SurrogateModeling.plotting.calculate_error_heatmap">
+<span class="sig-prename descclassname"><span class="pre">SurrogateModeling.plotting.</span></span><span class="sig-name descname"><span class="pre">calculate_error_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_ticks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_ticks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.plotting.calculate_error_heatmap" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates and returns a matrix of errors between predictions and actual test values.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>y_pred (np.ndarray): Predicted values.
+y_test (np.ndarray): Actual test values.
+x_ticks (list): List of tick values corresponding to columns of the error matrix.
+y_ticks (list): List of tick values corresponding to rows of the error matrix.</p>
+</dd>
+<dt>Returns:</dt><dd><p>np.ndarray: A 2D array of calculated errors.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SurrogateModeling.plotting.plot_error_heatmap">
+<span class="sig-prename descclassname"><span class="pre">SurrogateModeling.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_error_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_ticks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_ticks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Relative</span> <span class="pre">Error'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.2f'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.plotting.plot_error_heatmap" title="Link to this definition">¶</a></dt>
+<dd><p>Plots a heatmap for the given error matrix.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>errors (np.ndarray): A 2D array of errors to plot in the heatmap.
+x_ticks (list): A list of tick values for the x-axis.
+y_ticks (list): A list of tick values for the y-axis.
+x_label (str): Label for the x-axis.
+y_label (str): Label for the y-axis.
+title (str): Title for the heatmap.
+cmap (str): Colormap to use for plotting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SurrogateModeling.plotting.plot_predictions">
+<span class="sig-prename descclassname"><span class="pre">SurrogateModeling.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.plotting.plot_predictions" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluates the model on test data and plots the predictions against the true values.</p>
+<p>Parameters:
+- model: The trained Keras model to evaluate.
+- y_pred (array-like): Predicted values for the test features.
+- y_test (array-like): True values for the test features.
+- time_steps (array-like): The time steps for each feature in X_test.
+- max_plots (int): The maximum number of plots to display.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="SurrogateModeling.plotting.plot_train_test">
+<span class="sig-prename descclassname"><span class="pre">SurrogateModeling.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_train_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features_ticks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%.2f'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#SurrogateModeling.plotting.plot_train_test" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a 3D scatter plot of the training and test sets.</p>
+<p>Parameters:
+- X_train: Training features.
+- X_test: Test features.</p>
+</dd></dl>
+
+</section>
+<section id="surrogatemodeling-postproc-module">
+<h2>SurrogateModeling.postProc module<a class="headerlink" href="#surrogatemodeling-postproc-module" title="Link to this heading">¶</a></h2>
+</section>
+<section id="surrogatemodeling-training-module">
+<h2>SurrogateModeling.training module<a class="headerlink" href="#surrogatemodeling-training-module" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-SurrogateModeling">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-SurrogateModeling" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">MCMC-MEMS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">MCMC-MEMS</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SurrogateModeling package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SurrogateModeling.dataLoader">SurrogateModeling.dataLoader module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.dataLoader.ColumnMismatchError"><code class="docutils literal notranslate"><span class="pre">ColumnMismatchError</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.dataLoader.ConfigurationError"><code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataLoadingError"><code class="docutils literal notranslate"><span class="pre">DataLoadingError</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor"><code class="docutils literal notranslate"><span class="pre">DataProcessor</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor.load_data"><code class="docutils literal notranslate"><span class="pre">DataProcessor.load_data()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor.parse_config"><code class="docutils literal notranslate"><span class="pre">DataProcessor.parse_config()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor.process"><code class="docutils literal notranslate"><span class="pre">DataProcessor.process()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor.scale_data"><code class="docutils literal notranslate"><span class="pre">DataProcessor.scale_data()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor.scale_new_data"><code class="docutils literal notranslate"><span class="pre">DataProcessor.scale_new_data()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor.select_scaler"><code class="docutils literal notranslate"><span class="pre">DataProcessor.select_scaler()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor.shuffle_data"><code class="docutils literal notranslate"><span class="pre">DataProcessor.shuffle_data()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor.split_data"><code class="docutils literal notranslate"><span class="pre">DataProcessor.split_data()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.dataLoader.DataProcessor.stack_data"><code class="docutils literal notranslate"><span class="pre">DataProcessor.stack_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.dataLoader.FileNotFoundError"><code class="docutils literal notranslate"><span class="pre">FileNotFoundError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SurrogateModeling.model">SurrogateModeling.model module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.model.NN_Model"><code class="docutils literal notranslate"><span class="pre">NN_Model</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.model.NN_Model.build_model"><code class="docutils literal notranslate"><span class="pre">NN_Model.build_model()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.model.NN_Model.load_model"><code class="docutils literal notranslate"><span class="pre">NN_Model.load_model()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.model.NN_Model.plot_training_history"><code class="docutils literal notranslate"><span class="pre">NN_Model.plot_training_history()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.model.NN_Model.predict"><code class="docutils literal notranslate"><span class="pre">NN_Model.predict()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.model.NN_Model.save_model"><code class="docutils literal notranslate"><span class="pre">NN_Model.save_model()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#SurrogateModeling.model.NN_Model.train_model"><code class="docutils literal notranslate"><span class="pre">NN_Model.train_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SurrogateModeling.plotting">SurrogateModeling.plotting module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.plotting.calculate_error_heatmap"><code class="docutils literal notranslate"><span class="pre">calculate_error_heatmap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.plotting.plot_error_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_error_heatmap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.plotting.plot_predictions"><code class="docutils literal notranslate"><span class="pre">plot_predictions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#SurrogateModeling.plotting.plot_train_test"><code class="docutils literal notranslate"><span class="pre">plot_train_test()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#surrogatemodeling-postproc-module">SurrogateModeling.postProc module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#surrogatemodeling-training-module">SurrogateModeling.training module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-SurrogateModeling">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">MCMC-MEMS</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">MCMC-MEMS</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Filippo Zacchei.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/SurrogateModeling.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
