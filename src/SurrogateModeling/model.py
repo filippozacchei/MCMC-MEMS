@@ -13,8 +13,6 @@ from tensorflow.keras import losses
 from scipy.optimize import minimize
 
 
-
-
 class NN_Model:
     """
     A class to build, train, and manage a neural network model using TensorFlow and Keras.
@@ -71,7 +69,8 @@ class NN_Model:
                     loss: str = 'mean_squared_error', 
                     validation_freq: int = 100, 
                     verbose: int = 0,
-                    lr_schedule: Optional[Callable[[int], float]] = None) -> None:
+                    lr_schedule: Optional[Callable[[int], float]] = None,
+                    plot_loss: bool = False) -> None:
         """
         Trains the model on the provided dataset.
 
@@ -102,6 +101,8 @@ class NN_Model:
             validation_data=(X_val, y_val), validation_freq=validation_freq,
             callbacks=callbacks
         )
+
+        self.plot_training_history()
 
     def plot_training_history(self) -> None:
         """
