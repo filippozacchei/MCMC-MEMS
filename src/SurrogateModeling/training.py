@@ -7,7 +7,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 # Custom module imports
-sys.path.append('../utils')
+sys.path.append('../utils/preprocessing')
 
 from model import NN_Model
 from preprocessing import preprocessing
@@ -24,14 +24,13 @@ def train(config_file):
     Trains a neural network surrogate model based on the provided configuration, 
     which is parsed from a json file.
 
-    The configuration file should include these parameters:
+    The configuration file must include these parameters:
     - "INPUT_COLS": the input parameters parsed from csv file.
     - "DATASET_PATH": the path where the csv file is stored.
     - "CONFIGURATION" : two alternatives:
         - "I" refers to active voltage response,
         - "II" refers to sensitivity.
     - "MODEL_PATH": where to save the surrogate model.
-    - "Y_SCALING_FACTOR": how to rescale the output.
 
     Parameters:
     - config_file: str, path to the JSON configuration file.    
@@ -75,7 +74,7 @@ def train(config_file):
                           lr_schedule=learning_rate_schedule,
                           validation_freq=100,
                           verbose=2,
-                          plot_loss=True)
+                          plot_loss=config['PLOT_TRAIN'])
         
         # Save, load, and plot model
         logging.info("Saving and reloading the model for inference.")

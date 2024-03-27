@@ -1,6 +1,6 @@
 {
     "INPUT_COLS": ["Overetch", "Offset", "Thickness"],
-    "DATASET_PATH": ".data/C_training_lhs.csv",
+    "DATASET_PATH": "../data/C_training_lhs.csv",
     "CONFIGURATION" : "I",
     "MODEL_PATH": "./Saved_models/model_VoltageSignal.keras",
     "N_EPOCHS": 100000,
@@ -13,5 +13,6 @@
     "N_NEURONS": 64,
     "N_LAYERS": 6,
     "ACTIVATION": "tanh",
-    "SCALING_STRATEGY": "standard"
+    "SCALING_STRATEGY": "standard",
+    "PLOT_TRAIN": true
 }
