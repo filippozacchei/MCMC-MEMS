@@ -1,5 +1,11 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from matplotlib.colors import Normalize, BoundaryNorm
+from matplotlib.cm import ScalarMappable
+
+import itertools
+from itertools import product
+
 import numpy as np
 
 def plot_dataset(train, test, features_labels=None, features_ticks=None, features_ticks_labels=None, digits='%.2f', projection='3d'):
@@ -45,6 +51,30 @@ def plot_dataset(train, test, features_labels=None, features_ticks=None, feature
     plt.show()
     return 
 
+def plot_sensitivity_dataset(X_train, X_test, y_train, y_test, indices, mean_sensitivity,
+                             labels, ticks, ticks_labels, digits='%.2f', projection='3d'):
+    # Prepare the dataset for plotting
+    X_train_selected = X_train[:, indices[:-1]]
+    X_test_selected = X_test[:, indices[:-1]]
+    y_train_scaled = y_train / mean_sensitivity
+    y_test_scaled = y_test / mean_sensitivity
+    
+    # Stack the selected features and the scaled sensitivity values
+    train_data = np.hstack([X_train_selected, y_train_scaled[:, np.newaxis]])
+    test_data = np.hstack([X_test_selected, y_test_scaled[:, np.newaxis]])
+    
+    # Select the labels, ticks, and tick labels based on the provided indices
+    features_labels = [labels[i] for i in indices]
+    features_ticks = [ticks[i] for i in indices]
+    features_ticks_labels = [ticks_labels[i] for i in indices]
+    
+    # Plot the dataset
+    plot_dataset(train_data, test_data,
+                 features_labels=features_labels, 
+                 features_ticks=features_ticks, 
+                 features_ticks_labels=features_ticks_labels, 
+                 digits=digits, projection=projection)
+
 def plot_predictions(model, y_test, X_test, time_steps, max_plots=5):
     """
     Evaluates the model on test data and plots the predictions against the true values.
@@ -67,18 +97,24 @@ def plot_predictions(model, y_test, X_test, time_steps, max_plots=5):
         plt.grid(True)
         plt.show()
 
-def plot_correlation_sensitivity(y_train, y_pred_train, y_test, y_pred_test):
+def plot_correlation_sensitivity(model, X_train, X_test, y_train, y_test):
+    """
+    Scatter plot representing the discrepancy between reference data and predictions from the
+    surrogate model.
+    """
+    y_pred_train = model.predict(X_train).reshape(y_train.shape)
+    y_pred_test = model.predict(X_test).reshape(y_test.shape)
 
-        plt.figure(figsize=(8, 6))  # Set a larger figure size for better readability
+    plt.figure(figsize=(8, 6))  # Set a larger figure size for better readability
 
-        plt.scatter(y_train, y_pred_train, color='b', label='Training', edgecolor='w', s=50)
-        plt.scatter(y_test, y_pred_test, color='r', label='Validation', edgecolor='w', s=50)
-        plt.plot(y_train, y_train, 'k--', label='Data')
+    plt.scatter(y_train, y_pred_train, color='b', label='Training', edgecolor='w', s=50)
+    plt.scatter(y_test, y_pred_test, color='r', label='Validation', edgecolor='w', s=50)
+    plt.plot(y_train, y_train, 'k--', label='Data')
 
-        plt.xlabel('S reference', fontsize=14)
-        plt.ylabel('S predicted', fontsize=14)
-        plt.legend(fontsize=12)
-        plt.grid(True)
+    plt.xlabel('S reference', fontsize=14)
+    plt.ylabel('S predicted', fontsize=14)
+    plt.legend(fontsize=12)
+    plt.grid(True)
 
-        plt.savefig('model_predictions.png', dpi=300)  # Save as a high-quality PNG file
-        plt.show()
+    plt.savefig('model_predictions.png', dpi=300)  # Save as a high-quality PNG file
+    plt.show()
