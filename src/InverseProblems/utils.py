@@ -13,22 +13,11 @@ import time
 import tensorflow as tf
 
 # Adjust system path for local module imports
-sys.path.append('../DATA/')
 sys.path.append('../SurrogateModeling/')
+sys.path.append('../utils/preprocessing')
 
-from dataLoader import DataProcessor
 from model import NN_Model
-
-
-def load_model_and_config(CONFIGURATION_FILE):
-    """
-    Loads the neural network model and configuration file.
-    """
-    config = DataProcessor.parse_config(CONFIGURATION_FILE)  
-    model_path = '../SurrogateModeling/' + config['MODEL_PATH']
-    model = NN_Model()
-    model.load_model(model_path=model_path)
-    return model, config
+from preprocessing import preprocessing
 
 def create_forward_model_function(data_processor, nn_model):
     """
@@ -91,32 +80,19 @@ def create_gradient_function(data_processor, nn_model):
         return jacobian_squeezed
     return compute_jacobian
 
-def least_squares_optimization(y_observed, forward_model, INITIAL_GUESS, BOUNDS):
+def least_squares_optimization(y_observed, forward_model, start_point, bounds):
     """
     Performs least squares optimization to fit the model to the observed data.
     """
-    result = least_squares(objective_function, INITIAL_GUESS, args=([y_observed, forward_model]), bounds=BOUNDS, jac='3-point')
+    result = least_squares(objective_function, start_point, args=([y_observed, forward_model]), bounds=bounds, jac='3-point')
     return result.x, np.linalg.inv(result.jac.T @ result.jac)
-
-def setup_markov_chain_sampler(posterior_distribution, noise_level, start_point):
-    """
-    Sets up a Markov Chain Monte Carlo sampler with the given parameters.
-    """
-    proposal_distribution = Gaussian(mean=np.zeros(3), cov=np.array([noise_level*0.16*1e-2,
-                                                                     noise_level*1*1e-3,
-                                                                     noise_level*4*1e0]))
-    return MH(target=posterior_distribution, proposal=proposal_distribution, x0=start_point)
 
 def objective_function(input, exact_outputs, forward_model):
     predicted_outputs = forward_model(input).reshape(exact_outputs.shape)
     residuals = predicted_outputs - exact_outputs
     return residuals
 
-def perform_least_squares_optimization(y_obs):
-    result = least_squares(objective_function, INITIAL_GUESS, args=([y_obs]), bounds=BOUNDS, jac='3-point')
-    return result.x, np.linalg.inv(result.jac.T @ result.jac)
-
-def plot_results(time, y_true, y_obs, forward_model, samplesMH, REAL_COLOR, LINE_WIDTH):
+def plot_results(time, y_true, y_obs, forward_model, samplesMH, REAL_COLOR='red', LINE_WIDTH=1.5):
     plt.figure()
     plt.plot(1e3*time, y_true, c=REAL_COLOR, label='Real', linewidth=LINE_WIDTH)
     plt.plot(1e3*time, forward_model(samplesMH.mean()), 'green', label='Pred', linewidth=LINE_WIDTH)

@@ -115,6 +115,4 @@ def plot_correlation_sensitivity(model, X_train, X_test, y_train, y_test):
     plt.ylabel('S predicted', fontsize=14)
     plt.legend(fontsize=12)
     plt.grid(True)
-
-    plt.savefig('model_predictions.png', dpi=300)  # Save as a high-quality PNG file
     plt.show()

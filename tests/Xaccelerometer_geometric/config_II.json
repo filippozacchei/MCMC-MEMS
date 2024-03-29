@@ -3,7 +3,7 @@
     "DATASET_PATH": "./data/S_training_lhs.csv",
     "CONFIGURATION" : "II",
     "MODEL_PATH": "./models/model_sensitivity.keras",
-    "N_EPOCHS": 1000,
+    "N_EPOCHS": 100000,
     "BATCH_SIZE": 20,
     "LEARNING_RATE": 0.001,
     "DECAY_RATE": 0.01,

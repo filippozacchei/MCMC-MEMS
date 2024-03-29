@@ -51,8 +51,7 @@ class preprocessing:
 
             input_cols = self.config['INPUT_COLS']
 
-            if self.config['CONFIGURATION'] == "I":
-                print("ciao")
+            if self.config['CONFIGURATION'] == "I" :
                 time_step = self.data.iloc[0, len(input_cols)]
                 time_final = self.data.iloc[0, len(input_cols) + 1]
                 num_time_steps = int(time_final/time_step) + 1

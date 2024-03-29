@@ -232,61 +232,54 @@ def plot_sensitivity_histogram(samples, true_values, model_path, config_file, x_
         plt.show()
         i+=1
 
-    # # Setting up the figure and 3D axis
-    # x = x_values[:,0]
-    # y = x_values[:,1]
-    # z = mean_predictions
-    # fig = plt.figure(figsize=(10, 7))
-    # ax = fig.add_subplot(111, projection='3d')
+    def plot_costs():
+        # Improved style settings
+        plt.style.use('seaborn-whitegrid')  # Use a clean and elegant style
+        plt.rcParams.update({'font.size': 12, 'axes.labelweight': 'bold', 'figure.figsize': (8, 6)})
 
-    # # Adding data points as a scatter plot
-    # ax.scatter(x, y, z, label='predictions')
-    # ax.scatter(x, y, true_values, label='numerical')
+        # Define the data
+        categories = ['Offline Cost', 'Online Cost']
+        FEM_costs = [0, 100000]  # Adjusted to 0.1 for log scale
+        ANN_costs = [860, 120]
 
-    # # Adding labels and title
-    # ax.set_title(title)
-    # ax.set_xlabel('Overetch')
-    # ax.set_ylabel('Offset')
-    # ax.set_zlabel('S')
-    # plt.legend()
-    # plt.show()
+        x = np.arange(len(categories))  # the label locations
+        width = 0.4  # the width of the bars for better clarity
 
-    # fig = plt.figure(figsize=(10, 7))
-    # ax = fig.add_subplot(111, projection='3d')
+        fig, ax = plt.subplots()
 
-    # # Adding data points as a scatter plot
-    # ax.scatter(x, y, abs(z-true_values)/true_values, label='relative error')
+        # Elegant color palette
+        colors = ['#1f77b4', '#ff7f0e']
 
-    # print(title, "Mean relative error: ", np.mean(abs(z-true_values)/true_values))
-    # print(title, "Max relative error: ", np.max(abs(z-true_values)/true_values))
+        # Plotting with refined colors
+        rects1 = ax.bar(x - width/2, FEM_costs, width, label='FEM Model', color=colors[0], edgecolor='black')
+        rects2 = ax.bar(x + width/2, ANN_costs, width, label='ANN Model', color=colors[1], edgecolor='black')
 
+        # Labeling
+        ax.set_ylabel('Cost (minutes)', fontweight='bold')
+        ax.set_xticks(x)
+        ax.set_xticklabels(categories, fontweight='bold')
+        ax.legend(frameon=True, shadow=True, borderpad=1)
 
-    # # Adding labels and title
-    # ax.set_title(title)
-    # ax.set_xlabel('Overetch')
-    # ax.set_ylabel('Offset')
-    # ax.set_zlabel('S')
-    # plt.show()
+        # Logarithmic scale and grid
+        ax.set_yscale('log')
+        ax.grid(True, which="both", ls="--", linewidth=0.5)  # Add grid lines for both major and minor ticks
 
+        # Adding a text label above each bar
+        def autolabel(rects):
+            for rect in rects:
+                height = rect.get_height()
+                ax.annotate(f'{height:.1f}',
+                            xy=(rect.get_x() + rect.get_width() / 2, height),
+                            xytext=(0, 6),  # 6 points vertical offset
+                            textcoords="offset points",
+                            ha='center', va='bottom', fontweight='bold')
 
-    # sorted_indices = np.argsort(true_values)
-    # sorted_true_values = np.array(true_values)[sorted_indices]
-    # sorted_median_sensitivities = np.array(mean_sensitivities)[sorted_indices]
+        autolabel(rects1)
+        autolabel(rects2)
 
-    # fig = plt.figure(figsize=(10, 7))
-    # for i,S in enumerate(sorted_true_values):
-    #     plt.boxplot(sorted_median_sensitivities[i],positions=[sorted_true_values[i]], widths=0.001, showfliers=False)
-    
-    # plt.scatter(sorted_true_values,sorted_true_values)
-    # plt.show()
+        fig.tight_layout()
 
-    # fig = plt.figure(figsize=(10, 7))
-    # for i,S in enumerate(sorted_true_values):
-    #     plt.boxplot(abs(sorted_median_sensitivities[i]-S)/S,positions=[sorted_true_values[i]], widths=0.01, showfliers=False)
-    
-    # plt.show()
-
-
+        plt.show()
 
 
 # Main Function
@@ -305,10 +298,10 @@ def main():
     samples = load_samples()
     sample=samples[0]
     plot_histograms(samples, true_values)
-    # plot_scatter(samples, true_values)
+    plot_scatter(samples, true_values)
 
-    # for sample, true_value in zip(samples, true_values):
-    #     plot_density_scatter(sample, true_value, sigma_values=(0.2, 0.5))  # Adjust sigma values as needed
+    for sample, true_value in zip(samples, true_values):
+        plot_density_scatter(sample, true_value, sigma_values=(0.2, 0.5))  # Adjust sigma values as needed
 
     SENSITIVITY_MODEL_PATH = '../SurrogateModeling/Saved_models/model_sensitivity.h5'
     SENSITIVITY_CONFIG_FILE = '../SurrogateModeling/Config_files/config_sensitivity.json'
@@ -327,98 +320,16 @@ def main():
     x_values = data_processor.X_test
     # Columns to be swapped
     i, j = 1,2
-    # x_values[:, [i, j]] = x_values[:, [j, i]]
+    x_values[:, [i, j]] = x_values[:, [j, i]]
 
-    # num_values = model.predict(data_processor.scaler.transform(x_values)).flatten()
 
-    x = x_values[:,0]
-    y = x_values[:,1]
+    plot_sensitivity_histogram(samples, num_values, SENSITIVITY_MODEL_PATH, SENSITIVITY_CONFIG_FILE, x_values, title='Coventor')
 
-    # fig = plt.figure(figsize=(10, 7))
-    # ax = fig.add_subplot(111, projection='3d')
+    plot_sensitivity_histogram(samples, true_values, SENSITIVITY_MODEL_PATH, SENSITIVITY_CONFIG_FILE, x_values, title='ST reference')
 
-    # # Adding data points as a scatter plot
-    # ax.scatter(x, y, num_values, label='numerical')
-    # ax.scatter(x, y, true_values, label='reference')
+    plot_sensitivity_boxplot(samples, true_values, SENSITIVITY_MODEL_PATH, SENSITIVITY_CONFIG_FILE)
 
-    # # Adding labels and title
-    # ax.set_title('Coventor vs ST sensitivity')
-    # ax.set_xlabel('Overetch')
-    # ax.set_ylabel('Offset')
-    # ax.set_zlabel('S')
-    # plt.legend()
-    # plt.show()
 
-    # fig = plt.figure(figsize=(10, 7))
-    # ax = fig.add_subplot(111, projection='3d')
-
-    # # Adding data points as a scatter plot
-    # ax.scatter(x, y, abs(num_values-true_values)/true_values, label='error')
-
-    # print("Mean ST-Coventor relative error: ", np.mean(abs(num_values-true_values)/true_values))
-    # print("Max ST-Coventor relative error: ", np.max(abs(num_values-true_values)/true_values))
-
-    # # Adding labels and title
-    # ax.set_title('Coventor vs ST sensitivity relative error')
-    # ax.set_xlabel('Overetch')
-    # ax.set_ylabel('Offset')
-    # ax.set_zlabel('S')
-    # plt.legend()
-    # plt.show()
-
-    # plot_sensitivity_histogram(samples, num_values, SENSITIVITY_MODEL_PATH, SENSITIVITY_CONFIG_FILE, x_values, title='Coventor')
-
-    # plot_sensitivity_histogram(samples, true_values, SENSITIVITY_MODEL_PATH, SENSITIVITY_CONFIG_FILE, x_values, title='ST reference')
-
-    # plot_sensitivity_boxplot(samples, true_values, SENSITIVITY_MODEL_PATH, SENSITIVITY_CONFIG_FILE)
-
-    # Improved style settings
-    plt.style.use('seaborn-whitegrid')  # Use a clean and elegant style
-    plt.rcParams.update({'font.size': 12, 'axes.labelweight': 'bold', 'figure.figsize': (8, 6)})
-
-    # Define the data
-    categories = ['Offline Cost', 'Online Cost']
-    FEM_costs = [0, 100000]  # Adjusted to 0.1 for log scale
-    ANN_costs = [860, 120]
-
-    x = np.arange(len(categories))  # the label locations
-    width = 0.4  # the width of the bars for better clarity
-
-    fig, ax = plt.subplots()
-
-    # Elegant color palette
-    colors = ['#1f77b4', '#ff7f0e']
-
-    # Plotting with refined colors
-    rects1 = ax.bar(x - width/2, FEM_costs, width, label='FEM Model', color=colors[0], edgecolor='black')
-    rects2 = ax.bar(x + width/2, ANN_costs, width, label='ANN Model', color=colors[1], edgecolor='black')
-
-    # Labeling
-    ax.set_ylabel('Cost (minutes)', fontweight='bold')
-    ax.set_xticks(x)
-    ax.set_xticklabels(categories, fontweight='bold')
-    ax.legend(frameon=True, shadow=True, borderpad=1)
-
-    # Logarithmic scale and grid
-    ax.set_yscale('log')
-    ax.grid(True, which="both", ls="--", linewidth=0.5)  # Add grid lines for both major and minor ticks
-
-    # Adding a text label above each bar
-    def autolabel(rects):
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate(f'{height:.1f}',
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(0, 6),  # 6 points vertical offset
-                        textcoords="offset points",
-                        ha='center', va='bottom', fontweight='bold')
-
-    autolabel(rects1)
-    autolabel(rects2)
-
-    fig.tight_layout()
-
-    plt.show()
 
 if __name__ == "__main__":
     main()
