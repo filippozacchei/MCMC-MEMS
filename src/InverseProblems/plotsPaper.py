@@ -7,10 +7,10 @@ from tensorflow.keras.models import load_model
 from mpl_toolkits.mplot3d import Axes3D
 
 # Ensure your custom modules are in the path
-sys.path.append('../DATA/')
+sys.path.append('../utils/')
 sys.path.append('../SurrogateModeling/')
 
-from dataLoader import DataProcessor
+from preprocessing import preprocessing
 from model import NN_Model
 
 def load_samples():
@@ -24,64 +24,66 @@ def load_samples():
             print(f"Sample {name} not found.")
     return samples
 
-def plot_histograms(samples, true_values):
-    num_params = samples[0].shape[0]
+def plot_histograms(samples, true_params):
+
+    num_params = samples.shape[0]
     param_names = ['Overetch', 'Offset', 'Thickness']
+
     sigma = [0.4,1,2]
     avgi = [0.3,0.0,30.0]
     sim_avg = ['Oavg','Uavg','Tavg']
-    for sample, true_params in zip(samples, true_values):
-        for i in range(num_params):
-            plt.figure()
-            n, bins, _ = plt.hist(sample[i, :], bins=50, density=True, color='skyblue', edgecolor='black')
-            mean_value = np.mean(sample[i, :])
-            ci_lower, ci_upper = np.percentile(sample[i, :], [5, 95])
+    
+    for i in range(num_params):
+        plt.figure()
+        n, bins, _ = plt.hist(samples[i, :], bins=50, density=True, color='skyblue', edgecolor='black')
+        mean_value = np.mean(samples[i, :])
+        ci_lower, ci_upper = np.percentile(samples[i, :], [5, 95])
 
-            plt.axvline(true_params[i], color='darkred', linestyle='dashed', linewidth=3, label='True')
-            plt.axvline(mean_value, color='blue', linestyle='dashed', linewidth=3, label='Mean')
-            plt.fill_betweenx([0, max(n)], ci_lower, ci_upper, color='gray', alpha=0.35, label='95% CI')
+        plt.axvline(true_params[i], color='darkred', linestyle='dashed', linewidth=3, label='True')
+        plt.axvline(mean_value, color='blue', linestyle='dashed', linewidth=3, label='Mean')
+        plt.fill_betweenx([0, max(n)], ci_lower, ci_upper, color='gray', alpha=0.35, label='95% CI')
 
-            ratio_lower = (ci_lower-avgi[i]) / sigma[i]
-            ratio_upper = (ci_upper-avgi[i]) / sigma[i]
-            sym_lower = ""
-            sym_upper = ""
-            if ratio_lower>0:
-                sym_lower = "+"
-            if ratio_upper>0:
-                sym_upper = "+"
-            s = ['O','U','T']
-            plt.xticks([ci_lower,ci_upper],[sim_avg[i]+sym_lower+f'{ratio_lower:.4f} $\sigma_'+s[i]+'$',sim_avg[i]+sym_upper+f'{ratio_upper:.4f} $\sigma_'+s[i]+'$'])
+        ratio_lower = (ci_lower-avgi[i]) / sigma[i]
+        ratio_upper = (ci_upper-avgi[i]) / sigma[i]
+        sym_lower = ""
+        sym_upper = ""
+        if ratio_lower>0:
+            sym_lower = "+"
+        if ratio_upper>0:
+            sym_upper = "+"
+        s = ['O','U','T']
+        plt.xticks([ci_lower,ci_upper],[sim_avg[i]+sym_lower+f'{ratio_lower:.4f} $\sigma_'+s[i]+'$',sim_avg[i]+sym_upper+f'{ratio_upper:.4f} $\sigma_'+s[i]+'$'])
 
-            plt.xlabel(param_names[i], fontsize=14)
-            plt.ylabel('Density', fontsize=14)
-            plt.legend()
-            plt.grid(True)
-            plt.show()
+        plt.xlabel(param_names[i], fontsize=14)
+        plt.ylabel('Density', fontsize=14)
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
-def plot_scatter(samples, true_values):
-    num_params = samples[0].shape[0]
+def plot_scatter(sample):
+    print("ciao")
+    num_params = sample.shape[0]
     param_names = ['Overetch', 'Offset', 'Thickness']
     sigma=[0.4,1,2]
     avgi = [0.3,0.0,30.0]
     sim_avg = [r'$O_{avg}+$',r'$U_{avg}+$',r'$T_{avg}+$']
-    for sample in samples:
-        for i in range(num_params):
-            for j in range(i + 1, num_params):
-                plt.figure(figsize=(12,6))
-                plt.scatter(sample[i, :], sample[j, :], alpha=0.05, color='steelblue')
-                plt.xlabel(param_names[i], fontsize=14)
-                plt.ylabel(param_names[j], fontsize=14)
-                s = ['O','U','T']
-                ci_lower, ci_upper = np.percentile(sample[i, :], [5, 95])
-                ratio_lower = abs(ci_lower-avgi[i]) / sigma[i]
-                ratio_upper = abs(ci_upper-avgi[i]) / sigma[i]
-                plt.xticks([ci_lower,ci_upper],[sim_avg[i]+f'{ratio_lower:.4f} $\sigma_'+s[i]+'$',sim_avg[i]+f'{ratio_upper:.4f} $\sigma_'+s[i]+'$'])    
-                ci_lower, ci_upper = np.percentile(sample[j, :], [5, 95])
-                ratio_lower = abs(ci_lower-avgi[j]) / sigma[j]
-                ratio_upper = abs(ci_upper-avgi[j]) / sigma[j]
-                plt.yticks([ci_lower,ci_upper],[sim_avg[j]+f'{ratio_lower:.4f} $\sigma_'+s[j]+'$',sim_avg[j]+f'{ratio_upper:.4f} $\sigma_'+s[j]+'$'])
-                plt.grid(True)
-                plt.show()
+    for i in range(num_params):
+        for j in range(i + 1, num_params):
+            plt.figure(figsize=(12,6))
+            plt.scatter(sample[i, :], sample[j, :], alpha=0.05, color='steelblue')
+            plt.xlabel(param_names[i], fontsize=14)
+            plt.ylabel(param_names[j], fontsize=14)
+            s = ['O','U','T']
+            ci_lower, ci_upper = np.percentile(sample[i, :], [5, 95])
+            ratio_lower = abs(ci_lower-avgi[i]) / sigma[i]
+            ratio_upper = abs(ci_upper-avgi[i]) / sigma[i]
+            plt.xticks([ci_lower,ci_upper],[sim_avg[i]+f'{ratio_lower:.4f} $\sigma_'+s[i]+'$',sim_avg[i]+f'{ratio_upper:.4f} $\sigma_'+s[i]+'$'])    
+            ci_lower, ci_upper = np.percentile(sample[j, :], [5, 95])
+            ratio_lower = abs(ci_lower-avgi[j]) / sigma[j]
+            ratio_upper = abs(ci_upper-avgi[j]) / sigma[j]
+            plt.yticks([ci_lower,ci_upper],[sim_avg[j]+f'{ratio_lower:.4f} $\sigma_'+s[j]+'$',sim_avg[j]+f'{ratio_upper:.4f} $\sigma_'+s[j]+'$'])
+            plt.grid(True)
+            plt.show()
 
 def plot_density_scatter(sample, true_values, sigma_values):
     x, y = sample[0, :], sample[1, :]
@@ -139,7 +141,7 @@ def plot_sensitivity_boxplot(samples, true_values, model_path, config_file):
     model = NN_Model()
     model.load_model(model_path)
 
-    data_processor = DataProcessor(config_file)
+    data_processor = preprocessing(config_file)
     data_processor.process()
 
     S_avg = model.predict(data_processor.scaler.transform([[0.3, 0.0, 30.0]]))
@@ -196,100 +198,86 @@ def plot_sensitivity_boxplot(samples, true_values, model_path, config_file):
     plt.show()
 
 
-def plot_sensitivity_histogram(samples, true_values, model_path, config_file, x_values,title=None):
-    model = NN_Model()
-    model.load_model(model_path)
+def plot_sensitivity_histogram(sample, true_value, model, scaler, title=None):
 
-    data_processor = DataProcessor(config_file)
-    data_processor.process()
-    S_avg = model.predict(data_processor.scaler.transform([[0.3, 0.0, 30.0]]))
+    S_avg = 4.44
+    pri)
+    sample_transposed = sample.T
+    sample_transposed = scaler.transform(sample_transposed)
+    predicted_sensitivities = model.predict(sample_transposed).flatten()/S_avg
 
-    mean_predictions = np.zeros((len(true_values),))
-    # mean_sensitivities = np.zeros((len(samples),samples[0].shape[1]))
-    i=0
+    mean_sensitivity = np.mean(predicted_sensitivities)
+    ci_lower, ci_upper = np.percentile(predicted_sensitivities, [5, 95])
 
-    for sample, true_value in zip(samples, true_values):
-        print(i)
-        sample_transposed = sample.T
-        sample_transposed = data_processor.scaler.transform(sample_transposed)
-        predicted_sensitivities = model.predict(sample_transposed).flatten()/S_avg[0,0]
+    plt.figure()
+    n, bins, _ = plt.hist(predicted_sensitivities, bins=50, density=True, color='coral', edgecolor='black')
+    plt.axvline(mean_sensitivity, color='darkred', linestyle='dashed', linewidth=2, label = 'Mean')
+    plt.axvline(true_value/S_avg, color='blue', linestyle='dashed', linewidth=3, label = 'True')
+    plt.fill_betweenx([0, max(n)], ci_lower, ci_upper, color='gray', alpha=0.35, label='95% CI')
+    plt.xlabel('Sensitivity',fontsize=14)
+    plt.ylabel('Density',fontsize=14)
+    plt.legend()
+    plt.grid(True,axis='y')
+    plt.show()
 
-        mean_sensitivity = np.mean(predicted_sensitivities)
-        ci_lower, ci_upper = np.percentile(predicted_sensitivities, [5, 95])
+def plot_costs():
+    # Improved style settings
+    plt.style.use('seaborn-whitegrid')  # Use a clean and elegant style
+    plt.rcParams.update({'font.size': 12, 'axes.labelweight': 'bold', 'figure.figsize': (8, 6)})
 
-        mean_predictions[i] = mean_sensitivity
-        # mean_sensitivities[i,:] = predicted_sensitivities
+    # Define the data
+    categories = ['Offline Cost', 'Online Cost']
+    FEM_costs = [0, 100000]  # Adjusted to 0.1 for log scale
+    ANN_costs = [860, 120]
 
-        plt.figure()
-        n, bins, _ = plt.hist(predicted_sensitivities, bins=50, density=True, color='coral', edgecolor='black')
-        plt.axvline(mean_sensitivity, color='darkred', linestyle='dashed', linewidth=2, label = 'Mean')
-        plt.axvline(true_value/S_avg[0,0], color='blue', linestyle='dashed', linewidth=3, label = 'True')
-        plt.fill_betweenx([0, max(n)], ci_lower, ci_upper, color='gray', alpha=0.35, label='95% CI')
-        plt.xlabel('Sensitivity',fontsize=14)
-        plt.ylabel('Density',fontsize=14)
-        plt.legend()
-        plt.grid(True,axis='y')
-        plt.show()
-        i+=1
+    x = np.arange(len(categories))  # the label locations
+    width = 0.4  # the width of the bars for better clarity
 
-    def plot_costs():
-        # Improved style settings
-        plt.style.use('seaborn-whitegrid')  # Use a clean and elegant style
-        plt.rcParams.update({'font.size': 12, 'axes.labelweight': 'bold', 'figure.figsize': (8, 6)})
+    fig, ax = plt.subplots()
 
-        # Define the data
-        categories = ['Offline Cost', 'Online Cost']
-        FEM_costs = [0, 100000]  # Adjusted to 0.1 for log scale
-        ANN_costs = [860, 120]
+    # Elegant color palette
+    colors = ['#1f77b4', '#ff7f0e']
 
-        x = np.arange(len(categories))  # the label locations
-        width = 0.4  # the width of the bars for better clarity
+    # Plotting with refined colors
+    rects1 = ax.bar(x - width/2, FEM_costs, width, label='FEM Model', color=colors[0], edgecolor='black')
+    rects2 = ax.bar(x + width/2, ANN_costs, width, label='ANN Model', color=colors[1], edgecolor='black')
 
-        fig, ax = plt.subplots()
+    # Labeling
+    ax.set_ylabel('Cost (minutes)', fontweight='bold')
+    ax.set_xticks(x)
+    ax.set_xticklabels(categories, fontweight='bold')
+    ax.legend(frameon=True, shadow=True, borderpad=1)
 
-        # Elegant color palette
-        colors = ['#1f77b4', '#ff7f0e']
+    # Logarithmic scale and grid
+    ax.set_yscale('log')
+    ax.grid(True, which="both", ls="--", linewidth=0.5)  # Add grid lines for both major and minor ticks
 
-        # Plotting with refined colors
-        rects1 = ax.bar(x - width/2, FEM_costs, width, label='FEM Model', color=colors[0], edgecolor='black')
-        rects2 = ax.bar(x + width/2, ANN_costs, width, label='ANN Model', color=colors[1], edgecolor='black')
+    # Adding a text label above each bar
+    def autolabel(rects):
+        for rect in rects:
+            height = rect.get_height()
+            ax.annotate(f'{height:.1f}',
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, 6),  # 6 points vertical offset
+                        textcoords="offset points",
+                        ha='center', va='bottom', fontweight='bold')
 
-        # Labeling
-        ax.set_ylabel('Cost (minutes)', fontweight='bold')
-        ax.set_xticks(x)
-        ax.set_xticklabels(categories, fontweight='bold')
-        ax.legend(frameon=True, shadow=True, borderpad=1)
+    autolabel(rects1)
+    autolabel(rects2)
 
-        # Logarithmic scale and grid
-        ax.set_yscale('log')
-        ax.grid(True, which="both", ls="--", linewidth=0.5)  # Add grid lines for both major and minor ticks
+    fig.tight_layout()
 
-        # Adding a text label above each bar
-        def autolabel(rects):
-            for rect in rects:
-                height = rect.get_height()
-                ax.annotate(f'{height:.1f}',
-                            xy=(rect.get_x() + rect.get_width() / 2, height),
-                            xytext=(0, 6),  # 6 points vertical offset
-                            textcoords="offset points",
-                            ha='center', va='bottom', fontweight='bold')
-
-        autolabel(rects1)
-        autolabel(rects2)
-
-        fig.tight_layout()
-
-        plt.show()
+    plt.show()
 
 
 # Main Function
 def main():
     # Load data
     CONFIGURATION_FILE = '../SurrogateModeling/Config_files/config_VoltageSignal.json'
-    data_processor = DataProcessor(CONFIGURATION_FILE)
+    data_processor = preprocessing(CONFIGURATION_FILE)
     data_processor.process()
     CONFIGURATION_FILE2 = '../SurrogateModeling/Config_files/config_VoltageSignal_st.json'
-    data_processor2 = DataProcessor(CONFIGURATION_FILE2)
+    data_processor2 = preprocessing(CONFIGURATION_FILE2)
     data_processor2.process()
     X_values, y_values = data_processor.X_test, data_processor.y_test
 
@@ -306,11 +294,11 @@ def main():
     SENSITIVITY_MODEL_PATH = '../SurrogateModeling/Saved_models/model_sensitivity.h5'
     SENSITIVITY_CONFIG_FILE = '../SurrogateModeling/Config_files/config_sensitivity.json'
     
-    data_processor = DataProcessor(SENSITIVITY_CONFIG_FILE)
+    data_processor = preprocessing(SENSITIVITY_CONFIG_FILE)
     data_processor.process()
 
     CONFIGURATION_FILE3 = '../SurrogateModeling/Config_files/config_sensitivity_st_reference.json'
-    data_processor3 = DataProcessor(CONFIGURATION_FILE3)
+    data_processor3 = preprocessing(CONFIGURATION_FILE3)
     data_processor3.process()
 
     model = NN_Model()
