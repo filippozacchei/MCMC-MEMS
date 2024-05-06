@@ -1,10 +1,14 @@
 import numpy as np
 import os 
+from numba import jit
 
-w0 = np.loadtxt('./models/w0_opt.txt')
-w1 = np.loadtxt('./models/w1_opt.txt')
-w2 = np.loadtxt('./models/w2_opt.txt')
+w0 = np.loadtxt('./models/other_models/w0_opt.txt')
+w1 = np.loadtxt('./models/other_models/w1_opt.txt')
+w2 = np.loadtxt('./models/other_models/w2_opt.txt')
+weights_NN_oo3 = np.load('./models/weights_nn_oo3.npy')
+bias_NN_oo3 = np.load('./models/bias_NN_oo3.npy')
 
+@jit(nopython=True)
 def compute_stiffness(w, th , E , l1 , l2 , oe): 
     """
     Inputs:
@@ -27,10 +31,11 @@ def compute_stiffness(w, th , E , l1 , l2 , oe):
     
     return kTotal
 
+@jit(nopython=True)
 def fringing_coeff( G, W ,L):
     return (1+ G/np.pi/W + G/np.pi/W*np.log(2*np.pi*W/G))*(1+ G/np.pi/L + G/np.pi/L*np.log(2*np.pi*L/G))
     
-
+@jit(nopython=True)
 def coarse_model(params):
     """
     - Inputs:
@@ -209,3 +214,47 @@ def coarse_model_adj(params):
     C = C*1.02*1e15 + w0*params[0] + w1*params[1] + w2*params[2]
 
     return C
+
+def create_model_LF_NN(model_NN):
+
+    def model_LF(X):
+        # Compute the coarse model predictions 
+        coarse_prediction = coarse_model(X)
+        # Concatenate the input and the predictions along the last axis
+        concatenated_input = np.concatenate([X, coarse_prediction])
+        return model_NN(np.array([concatenated_input])).numpy()[0]
+    
+    return model_LF
+
+def create_model_LF_NN_oo2(model_NN):
+
+    def model_LF(X):
+        # Compute the coarse model predictions 
+        coarse_prediction = coarse_model(X)[0:150:2]
+        # Concatenate the input and the predictions along the last axis
+        concatenated_input = np.concatenate([X, coarse_prediction])
+        return model_NN(np.array([concatenated_input])).numpy()[0]
+    
+    return model_LF
+
+def create_model_LF_NN_oo3(model_NN):
+
+    def model_LF(X):
+        # Compute the coarse model predictions 
+        coarse_prediction = coarse_model(X)[0:150:3]
+        # Concatenate the input and the predictions along the last axis
+        concatenated_input = np.concatenate([X, coarse_prediction])
+        return model_NN(np.array([concatenated_input])).numpy()[0]
+    
+    return model_LF
+
+def create_model_LF_NN_oo3_opt():
+
+    def model_LF(X):
+        # Compute the coarse model predictions 
+        coarse_prediction = coarse_model(X)[0:150:3]
+        # Concatenate the input and the predictions along the last axis
+        concatenated_input = np.concatenate([X, coarse_prediction])
+        return np.dot(concatenated_input, weights_NN_oo3) + bias_NN_oo3
+    
+    return model_LF
