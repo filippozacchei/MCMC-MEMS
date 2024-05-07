@@ -83,7 +83,7 @@ class preprocessing:
         """
 
         if len(self.data.columns) > 5:
-            output_cols = self.data.columns[5:-1]
+            output_cols = self.data.columns[len(self.config['INPUT_COLS'])+2:-1]
         else:
             output_cols = self.data.columns[-1]
 
