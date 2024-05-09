@@ -37,7 +37,7 @@ class NN_Model:
                     input_shape: (int), 
                     n_neurons: List[int] = [64, 64, 64, 64, 64, 64, 64, 64], 
                     activation: str = 'tanh',
-                    output_neurons: int = 1,
+                    output_neurons: int = 2,
                     output_activation: str = 'linear',
                     initializer: str = 'glorot_uniform') -> None:
         """
@@ -53,10 +53,10 @@ class NN_Model:
         :raises ValueError: If the length of `n_neurons` and `activations` lists do not match.
         """
 
-        self.model.add(Dense(n_neurons[0], activation=activation, input_shape=(input_shape,), kernel_initializer=initializer, kernel_regularizer=l2(1e-9)))        
+        self.model.add(Dense(n_neurons[0], activation=activation, input_shape=(input_shape,), kernel_initializer=initializer, kernel_regularizer=l2(1e-12)))        
         for neurons in n_neurons[1:]:
-            self.model.add(Dense(neurons, activation=activation, kernel_initializer=initializer, kernel_regularizer=l2(1e-9)))
-        self.model.add(Dense(output_neurons, activation=output_activation, kernel_regularizer=l2(1e-9)))
+            self.model.add(Dense(neurons, activation=activation, kernel_initializer=initializer,  kernel_regularizer=l2(1e-12)))
+        self.model.add(Dense(15, activation=output_activation, kernel_regularizer=l2(1e-12)))
 
     def train_model(self, 
                     X: np.ndarray, 
