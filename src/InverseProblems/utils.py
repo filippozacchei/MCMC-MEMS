@@ -36,7 +36,8 @@ def create_forward_model_function(data_processor, nn_model):
 
         # Scale and predict in one step
         scaled_data = data_processor.scaler.transform(x_combined)
-        output = nn_model.model(scaled_data).numpy().flatten()
+        #output = nn_model.predict(scaled_data).flatten()
+        output = nn_model.model(scaled_data).numpy().reshape(150,)
         return output
         
     return forward_model

@@ -1,0 +1,18 @@
+{
+    "INPUT_COLS": ["Overetch", "Offset", "Thickness", "qFactor"],
+    "DATASET_PATH": "./data/C_training_qFactor.csv",
+    "CONFIGURATION" : "fft",
+    "MODEL_PATH": "./models/model_VoltageSignal_fft.keras",
+    "N_EPOCHS": 100000,
+    "BATCH_SIZE": 64,
+    "LEARNING_RATE": 0.01,
+    "DECAY_RATE": 0.01,
+    "TEST_SIZE": 0.2,
+    "RANDOM_STATE": 2,
+    "Y_SCALING_FACTOR": 1e15,
+    "N_NEURONS": 64,
+    "N_LAYERS": 6,
+    "ACTIVATION": "tanh",
+    "SCALING_STRATEGY": "standard",
+    "PLOT_TRAIN": true
+}

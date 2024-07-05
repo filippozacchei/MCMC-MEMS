@@ -20,7 +20,7 @@ class preprocessing:
         self.data = None
         self.time= None
         self.X_train = self.X_test = self.y_train = self.y_test = None
-        self.X_train_scaled = self.X_test_scaled = self.scaler = self.scalery = None
+        self.X_train_scaled = self.X_test_scaled = self.scaler = None
         self.process()
 
     def process(self):
@@ -51,14 +51,14 @@ class preprocessing:
 
             input_cols = self.config['INPUT_COLS']
 
-            if self.config['CONFIGURATION'] == "I" or self.config['CONFIGURATION'] == "fft":
+            if self.config['CONFIGURATION'] == "I" :
                 time_step = self.data.iloc[0, len(input_cols)]
                 time_final = self.data.iloc[0, len(input_cols) + 1]
                 num_time_steps = int(time_final/time_step) + 1
                 self.time = np.arange(0, time_final, time_step)
+
                 time_columns = [f"Time={1e3 * time_step * i:.2f}ms" for i in range(num_time_steps)]
                 self.data.columns = input_cols + ['ts', 'tf'] + time_columns
-            
             
             else:
                 self.data.columns = input_cols + ['sensitivity']
@@ -83,32 +83,16 @@ class preprocessing:
         """
 
         if len(self.data.columns) > 5:
-            output_cols = self.data.columns[len(self.config['INPUT_COLS'])+2:-1]
+            output_cols = self.data.columns[5:-1]
         else:
             output_cols = self.data.columns[-1]
 
-        if self.config["CONFIGURATION"] == 'fft':
-            X = self.data[self.config['INPUT_COLS']].values
-            y_temp = self.config['Y_SCALING_FACTOR'] * self.data[output_cols].values
-            
-            self.X_train, self.X_test, self.y_series_train, self.y_series_test = train_test_split(
-                X, y_temp, test_size=self.config['TEST_SIZE'], random_state=self.config['RANDOM_STATE']
-            )
+        X = self.data[self.config['INPUT_COLS']].values
+        y = self.config['Y_SCALING_FACTOR'] * self.data[output_cols].values
 
-            fft = np.fft.fft(y_temp-np.mean(y_temp,axis=1).reshape((y_temp.shape[0],1)))[:,:8]
-            y = np.hstack((10*np.mean(y_temp,axis=1).reshape((y_temp.shape[0],1)),np.abs(fft)[:,1:],100*np.angle(fft)[:,1:]))
-
-            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-                X, y, test_size=self.config['TEST_SIZE'], random_state=self.config['RANDOM_STATE']
-            )
-        else:
-            X = self.data[self.config['INPUT_COLS']].values
-            y = self.config['Y_SCALING_FACTOR'] * self.data[output_cols].values
-
-            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-                X, y, test_size=self.config['TEST_SIZE'], random_state=self.config['RANDOM_STATE']
-            )
-
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            X, y, test_size=self.config['TEST_SIZE'], random_state=self.config['RANDOM_STATE']
+        )
 
     @staticmethod
     def stack_data(X, y, time):
@@ -127,8 +111,8 @@ class preprocessing:
         :return y_rep: (numpy array) flattened y.
 
         """
-        print(y.shape)
-        output_cols = y.shape[-1]
+
+        output_cols = y.shape[1]
         X_rep = np.repeat(X, output_cols, axis=0)
         time_repeated = np.tile(time, len(X_rep) // len(time))
         X_rep = np.column_stack((X_rep, time_repeated))
@@ -168,24 +152,15 @@ class preprocessing:
         """
 
         self.scaler = self.select_scaler(scaling_strategy)
-        # self.X_train, self.y_train = self.shuffle_data(self.X_train, self.y_train)
+        self.X_train, self.y_train = self.shuffle_data(self.X_train, self.y_train)
 
-        if self.config["CONFIGURATION"] == "I":
+        if self.time is not None:
             X_train_rep, y_train_rep = self.stack_data(self.X_train, self.y_train, self.time)
             X_test_rep, y_test_rep = self.stack_data(self.X_test, self.y_test, self.time)
             self.X_train_scaled = self.scaler.fit_transform(X_train_rep)
             self.X_test_scaled = self.scaler.transform(X_test_rep)
             self.y_train_scaled = y_train_rep
             self.y_test_scaled = y_test_rep
-
-        elif self.config["CONFIGURATION"] == "fft":
-            X_train_rep, y_train_rep = self.X_train, self.y_train
-            X_test_rep, y_test_rep = self.X_test, self.y_test
-            self.X_train_scaled = self.scaler.fit_transform(X_train_rep)
-            self.X_test_scaled = self.scaler.transform(X_test_rep)
-            self.y_train_scaled = y_train_rep
-            self.y_test_scaled = y_test_rep
-
         else:
             self.X_train_scaled = self.scaler.fit_transform(self.X_train)
             self.X_test_scaled = self.scaler.transform(self.X_test)

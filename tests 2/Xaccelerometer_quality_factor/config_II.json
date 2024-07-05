@@ -1,0 +1,18 @@
+{
+    "INPUT_COLS": ["Overetch", "Offset", "Thickness"],
+    "DATASET_PATH": "./data/S_training_lhs.csv",
+    "CONFIGURATION" : "II",
+    "MODEL_PATH": "./models/model_sensitivity.keras",
+    "N_EPOCHS": 100000,
+    "BATCH_SIZE": 20,
+    "LEARNING_RATE": 0.001,
+    "DECAY_RATE": 0.01,
+    "TEST_SIZE": 0.2,
+    "RANDOM_STATE": 2,
+    "Y_SCALING_FACTOR": 1e3,
+    "N_NEURONS": 32,
+    "N_LAYERS": 4,
+    "ACTIVATION": "tanh",
+    "SCALING_STRATEGY": "standard",
+    "PLOT_TRAIN": false
+}

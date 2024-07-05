@@ -201,7 +201,6 @@ def plot_sensitivity_boxplot(samples, true_values, model_path, config_file):
 def plot_sensitivity_histogram(sample, true_value, model, scaler, title=None):
 
     S_avg = 4.44
-    
     sample_transposed = sample.T
     sample_transposed = scaler.transform(sample_transposed)
     predicted_sensitivities = model.predict(sample_transposed).flatten()/S_avg
