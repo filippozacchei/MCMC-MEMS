@@ -3,7 +3,8 @@ from matplotlib import pyplot as plt
 from scipy.stats import gaussian_kde
 import sys
 sys.path.append('./solver')
-from random_process_to_plot import * 
+from random_process import * 
+from fenics import *
 
 
 def plot_parameter_distributions(data, x_true, parameter_names, n_eig):
@@ -83,37 +84,6 @@ def plot_results( y_true, y_obs, model, samplesMH ,n_eig, x_true = None, REAL_CO
 
 
 
-def plot_fields(x_true, x_estimated, n_eig, lognormal = False):
-    field = RandomProcess(n_eig)
-    field.compute_eigenpairs()
-    field_reconstructed = RandomProcess(n_eig)
-    field_reconstructed.compute_eigenpairs()
-
-    fig = plt.figure(figsize=(10, 4))
-    plt.subplots_adjust(hspace=0.5)
-    title = 'True vs Reconstructed Random Field'
-    fig.suptitle(title, fontsize=14)
-
-    # Generate fields to find the global vmin and vmax
-    field.generate(x_true)
-    field_true = field.random_field
-    field_reconstructed.generate(x_estimated)
-    field_estimated = field_reconstructed.random_field
-
-    vmin = min(field_true.min(), field_estimated.min())
-    vmax = max(field_true.max(), field_estimated.max())
-
-    ax = fig.add_subplot(121)
-    field.plot(vmin=vmin, vmax=vmax, lognormal = lognormal)
-    ax.title.set_text('True Transmissivity field: ')
-
-    ax = fig.add_subplot(122)
-    field_reconstructed.plot(vmin=vmin, vmax=vmax, lognormal = lognormal)
-    ax.title.set_text('Reconstructed field: ')
-
-    plt.show()
-
-
 def plot_parameter_distribution(parameter_samples, x_true, parameter_name):
     plt.figure()
     kernel_density = gaussian_kde(parameter_samples)
@@ -128,4 +98,57 @@ def plot_parameter_distribution(parameter_samples, x_true, parameter_name):
     plt.xlabel(parameter_name)
     plt.ylabel('Density')
     plt.legend()
+    plt.show()
+
+
+def plot_fields(x_true, x_estimated, n_eig, lamb=0.1 , resolution = [50,50] , mean = 0, std_dev = 1, lognormal = False):
+
+    mesh = UnitSquareMesh(resolution[0], resolution[1])
+    field = RandomProcess(mesh, n_eig, lamb )
+    field.compute_eigenpairs()
+    field_reconstructed = RandomProcess(mesh , n_eig,lamb)
+    field_reconstructed.compute_eigenpairs()
+
+    fig = plt.figure(figsize=(10, 4))
+    plt.subplots_adjust(hspace=0.5)
+    title = 'True vs Reconstructed Random Field'
+    fig.suptitle(title, fontsize=14)
+
+    # Generate fields to find the global vmin and vmax
+    field.generate(x_true)
+    field_reconstructed.generate(x_estimated)
+    if lognormal == True:
+        field_true = np.exp(mean + std_dev*field.random_field)
+        field_estimated = np.exp(mean + std_dev*field_reconstructed.random_field)
+    else:
+        field_true = mean + std_dev*field.random_field
+        field_estimated = mean + std_dev*field_reconstructed.random_field
+
+    global_min = min(min(field_true), min(field_estimated))
+    global_max = max(max(field_true), max(field_estimated))
+    contour_levels_field = np.linspace(global_min, global_max, 100)
+
+    x = mesh.coordinates()[:,0]; y = mesh.coordinates()[:,1]
+    # Plot field and solution.
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize = (24, 9))
+    
+    axes[0].set_title('Transmissivity Field', fontdict = {'fontsize': 24})
+    axes[0].tick_params(labelsize=16)
+    f1 = axes[0].tricontourf(x, 
+                            y, 
+                            field_true, 
+                            levels = contour_levels_field, 
+                            cmap = 'plasma');  
+    fig.colorbar(f1, ax=axes[0])
+        
+    axes[1].set_title('Reconstruction', fontdict = {'fontsize': 24})
+    axes[1].tick_params(labelsize=16)
+    f2 = axes[1].tricontourf(x, 
+                            y, 
+                            field_estimated, 
+                            levels = contour_levels_field, 
+                            cmap = 'plasma');  
+    fig.colorbar(f2, ax=axes[1])
+
+
     plt.show()

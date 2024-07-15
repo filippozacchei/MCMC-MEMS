@@ -79,3 +79,20 @@ class RandomProcess:
         plt.tricontourf(self.x, self.y, random_field, levels = contour_levels, cmap = 'magma'); 
         plt.colorbar()
         plt.show()
+
+    def plot_same_scale(self, lognormal=False, vmin=None, vmax=None, compare=True):
+        # Plot the random field.
+        if lognormal:
+            random_field = np.exp(self.random_field)
+        else:
+            random_field = self.random_field
+
+        contour_levels = np.linspace(vmin, vmax, 50)  # Use vmin and vmax for consistent levels
+        if not compare:
+            plt.figure(figsize=(12, 10))
+
+        plt.tricontourf(self.x, self.y, random_field, levels=contour_levels, cmap='magma', vmin=vmin, vmax=vmax)
+        plt.colorbar()
+        if not compare:
+            plt.show()
+
