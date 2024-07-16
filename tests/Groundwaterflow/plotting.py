@@ -101,7 +101,7 @@ def plot_parameter_distribution(parameter_samples, x_true, parameter_name):
     plt.show()
 
 
-def plot_fields(x_true, x_estimated, n_eig, lamb=0.1 , resolution = [50,50] , mean = 0, std_dev = 1, lognormal = False):
+def plot_fields(x_true, x_estimated, n_eig, lamb=0.1 , resolution = [50,50] , mean = 1, std_dev = 1, lognormal = False):
 
     mesh = UnitSquareMesh(resolution[0], resolution[1])
     field = RandomProcess(mesh, n_eig, lamb )
