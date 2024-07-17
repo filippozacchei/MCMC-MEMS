@@ -4,7 +4,7 @@ from numpy.linalg import inv, det
 import matplotlib.pyplot as plt
 
 from scipy.linalg import eigh
-#from scipy.sparse.linalg.eigen.arpack import eigsh 
+#from scipy.sparse.linalg import eigsh 
 from scipy.spatial import distance_matrix
 
 
@@ -41,8 +41,10 @@ class RandomProcess:
     def compute_eigenpairs(self):
         
         # Find eigenvalues and eigenvectors using Arnoldi iteration.
+        #eigvals, eigvecs = np.linalg.eigh(self.cov)
         eigvals, eigvecs = eigh(self.cov, eigvals = (self.n_points - self.mkl, self.n_points - 1))
         #eigvals, eigvecs = eigsh(self.cov, self.mkl, which = 'LM')
+        
         
         order = np.flip(np.argsort(eigvals))
         self.eigenvalues = eigvals[order]
@@ -64,6 +66,7 @@ class RandomProcess:
         self.random_field = np.linalg.multi_dot((self.eigenvectors, 
                                                  np.sqrt(np.diag(self.eigenvalues)), 
                                                  self.parameters))
+        
 
     def plot(self, lognormal = False):
         
