@@ -126,6 +126,7 @@ class GwFlowSolver:
         self.Q = VectorFunctionSpace(self.mesh, "CG", 1)
         self.q = project(-self.K*grad(self.h), self.Q)
         
+    
     def get_data(self, datapoints):
         
         # Return data from a set of points.

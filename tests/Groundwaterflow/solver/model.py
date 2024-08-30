@@ -41,7 +41,6 @@ class Model:
         return np.fromiter(map(self.solver.h, self.x, self.y), dtype=float)
         
     def get_data(self, datapoints):
-        
         # Get data from a list of coordinates.
         return self.solver.get_data(datapoints)
         
