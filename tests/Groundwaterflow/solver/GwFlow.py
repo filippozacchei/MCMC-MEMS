@@ -15,7 +15,7 @@ class GwFlowSolver:
         # To suppress the output of the model
         set_log_level(LogLevel.ERROR)
         # to restore the output
-        #set_log_level(LogLevel.PROGRESS)
+        # set_log_level(LogLevel.PROGRESS)
 
         # Head at inflow and outflow.
         self.h_in = 1
@@ -98,12 +98,28 @@ class GwFlowSolver:
         self.K.vector().set_local(self.conductivity[self.d2v])
     
     def solve(self):
-        
+        # info(LinearVariationalSolver.default_parameters(), True)
         # Solve the variational problem
         F = inner(grad(self.v), self.K*grad(self.u))*dx - self.v*self.q_0*self.ds(0)
         a, L = lhs(F), rhs(F)
         self.h = Function(self.V)
-        solve(a == L, self.h, self.bcs)
+        # Define the variational problem and solver
+        problem = LinearVariationalProblem(a, L, self.h, self.bcs)
+        solver = LinearVariationalSolver(problem)
+
+        # Set solver parameters
+        prm = solver.parameters
+        prm['linear_solver'] = 'gmres'
+        prm['preconditioner'] = 'ilu'
+        prm['krylov_solver']['absolute_tolerance'] = 1e-12
+        prm['krylov_solver']['relative_tolerance'] = 1e-12
+        prm['krylov_solver']['maximum_iterations'] = 1000000
+
+        # Solve the variational problem
+        solver.solve()
+        # solve(a == L, self.h, self.bcs, 
+        #       solver_parameters={"linear_solver": "lu"},
+        #       form_compiler_parameters={"optimize": True})
         
     def compute_flow(self):
         
