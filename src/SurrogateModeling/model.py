@@ -67,7 +67,7 @@ class NN_Model:
                     epochs: int = 10000, 
                     batch_size: int = 15000, 
                     loss: str = 'mean_squared_error', 
-                    validation_freq: int = 100, 
+                    validation_freq: int = 1, 
                     verbose: int = 0,
                     lr_schedule: Optional[Callable[[int], float]] = None,
                     plot_loss: bool = False) -> None:
@@ -102,7 +102,7 @@ class NN_Model:
             callbacks=callbacks
         )
 
-        self.plot_training_history()
+        # self.plot_training_history()
 
     def plot_training_history(self) -> None:
         """
@@ -149,3 +149,30 @@ class NN_Model:
         """
 
         return self.model.predict(X, verbose=0)
+
+class LSTM_Model(NN_Model):
+    def build_model(self, 
+                    input_shape: (int,int), 
+                    n_neurons: List[int] = [64,64,64,64,64,64], 
+                    activations: List[str] = ['tanh']*6,
+                    output_neurons: int = 1,
+                    output_activation: str = 'linear',
+                    lstm_units: int = 64,  # Number of units in LSTM layers
+                    initializer: str = 'glorot_uniform') -> None:
+        """
+        Constructs the neural network model with LSTM layers in the middle.
+        """
+        n_layers = len(n_neurons)
+
+        self.model.add(Dense(n_neurons[0], activation=activations[0], input_shape=input_shape, kernel_initializer=initializer))
+
+        for neurons, activation in zip(n_neurons[:(n_layers//2)], activations[:(n_layers//2)]):  # Adding the first half of dense layers
+            self.model.add(Dense(neurons, activation=activation, kernel_initializer=initializer))
+
+        self.model.add(LSTM(lstm_units, return_sequences=True))  # First LSTM layer
+
+        # Add remaining dense layers
+        for neurons, activation in zip(n_neurons[(n_layers//2):], activations[(n_layers//2):]):  # Adding the second half of dense layers
+            self.model.add(Dense(neurons, activation=activation, kernel_initializer=initializer))
+
+        self.model.add(Dense(output_neurons, activation=output_activation))

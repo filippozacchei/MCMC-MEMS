@@ -54,6 +54,7 @@ def plot_histograms(samples, true_params):
         s = ['O','U','T']
         plt.xticks([ci_lower,ci_upper],[sim_avg[i]+sym_lower+f'{ratio_lower:.4f} $\sigma_'+s[i]+'$',sim_avg[i]+sym_upper+f'{ratio_upper:.4f} $\sigma_'+s[i]+'$'])
 
+        plt.xlim((true_params[i]-0.007*0.4,true_params[i]+0.007*0.4))
         plt.xlabel(param_names[i], fontsize=14)
         plt.ylabel('Density', fontsize=14)
         plt.legend()
@@ -83,6 +84,7 @@ def plot_scatter(sample):
             ratio_upper = abs(ci_upper-avgi[j]) / sigma[j]
             plt.yticks([ci_lower,ci_upper],[sim_avg[j]+f'{ratio_lower:.4f} $\sigma_'+s[j]+'$',sim_avg[j]+f'{ratio_upper:.4f} $\sigma_'+s[j]+'$'])
             plt.grid(True)
+
             plt.show()
 
 def plot_density_scatter(sample, true_values, sigma_values):
@@ -134,6 +136,9 @@ def plot_density_scatter(sample, true_values, sigma_values):
 
     ax_histx.axis('off')
     ax_histy.axis('off')
+
+    # ax_scatter.set_xlim((avg[i]-0.0289/2,avg[i]+0.0289/2))
+    # ax_scatter.set_ylim((avg[j]-0.0194/2,avg[j]+0.0194/2))
 
     plt.show()
 

@@ -5,8 +5,13 @@ from numba import jit
 w0 = np.loadtxt('./models/other_models/w0_opt.txt')
 w1 = np.loadtxt('./models/other_models/w1_opt.txt')
 w2 = np.loadtxt('./models/other_models/w2_opt.txt')
+<<<<<<< HEAD
 weights_NN_oo3 = np.load('./models/weights_nn_oo3.npy')
 bias_NN_oo3 = np.load('./models/bias_NN_oo3.npy')
+=======
+weights_NN_oo3 = np.load('./models/weights_nn_oo32.npy')
+bias_NN_oo3 = np.load('./models/bias_NN_oo32.npy')
+>>>>>>> 6e30e4a58cc90be982622b59052fc473bc94a6a1
 
 @jit(nopython=True)
 def compute_stiffness(w, th , E , l1 , l2 , oe): 
